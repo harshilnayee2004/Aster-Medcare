@@ -6,12 +6,20 @@ import PatientHeader from "../components/PatientHeader.jsx";
 import FileUpload from "../components/FileUpload.jsx";
 import { formatDateTime, getPatient } from "../utils/localStorage.js";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function Dashboard() {
   const { patientId } = useParams();
+  const { currentUser } = useAuth();
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const hasAccess = (formKey) => {
+    if (!currentUser) return false;
+    if (currentUser.role === "admin" || currentUser.role === "doctor") return true;
+    return currentUser.formAccess?.includes(formKey);
+  };
 
   useEffect(() => {
     async function loadPatient() {
@@ -99,30 +107,35 @@ export default function Dashboard() {
               icon="PM"
               status={forms.postMedical?.savedAt ? "Completed" : "Pending"}
               to={`/patients/${patientId}/post-medical`}
+              disabled={!hasAccess("postMedical")}
             />
             <FormCard
               title="Eye Examination"
               icon="EX"
               status={forms.eyeExam?.savedAt ? "Completed" : "Pending"}
               to={`/patients/${patientId}/eye-exam`}
+              disabled={!hasAccess("eyeExam")}
             />
             <FormCard
               title="Form No. 33"
               icon="33"
               status={forms.form33?.savedAt ? "Completed" : "Pending"}
               to={`/patients/${patientId}/form-33`}
+              disabled={!hasAccess("form33")}
             />
             <FormCard
               title="Form No. 32"
               icon="32"
               status={forms.healthRegister?.savedAt ? "Completed" : "Pending"}
               to={`/patients/${patientId}/health-register`}
+              disabled={!hasAccess("healthRegister")}
             />
             <FormCard
               title="X-Ray Report"
               icon="XR"
               status={forms.xrayReport?.savedAt ? "Completed" : "Pending"}
               to={`/patients/${patientId}/xray-report`}
+              disabled={!hasAccess("xrayReport")}
             />
           </div>
         </section>

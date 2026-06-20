@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import { useAuth } from "./context/AuthContext.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import EyeExamForm from "./pages/EyeExamForm.jsx";
@@ -62,6 +62,41 @@ function RoleProtectedRoute({ children, allowedRoles }) {
   return children;
 }
 
+// Route protection wrapper for form pages based on currentUser.formAccess
+function FormProtectedRoute({ children, formKey }) {
+  const { currentUser, token, loading } = useAuth();
+  const { patientId } = useParams();
+  
+  if (loading) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-[#f7f9fc] text-slate-500 font-semibold">
+        Loading Authentication Session...
+      </div>
+    );
+  }
+  
+  if (!token) {
+    return <Navigate to="/" replace />;
+  }
+  
+  if (!currentUser) {
+    return <Navigate to="/patients" replace />;
+  }
+
+  // Admins and Doctors always have full access to all forms
+  if (currentUser.role === "admin" || currentUser.role === "doctor") {
+    return children;
+  }
+
+  // Employees must have the formKey in their formAccess array
+  if (currentUser.role === "employee" && currentUser.formAccess?.includes(formKey)) {
+    return children;
+  }
+
+  // Access denied, redirect to patient dashboard or directory
+  return <Navigate to={patientId ? `/patients/${patientId}` : "/patients"} replace />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -94,63 +129,63 @@ export default function App() {
       } />
       
       <Route path="/patients/:patientId/post-medical" element={
-        <ProtectedRoute>
+        <FormProtectedRoute formKey="postMedical">
           <PostMedicalForm />
-        </ProtectedRoute>
+        </FormProtectedRoute>
       } />
       
       <Route path="/patients/:patientId/post-medical/preview" element={
-        <ProtectedRoute>
+        <FormProtectedRoute formKey="postMedical">
           <PostMedicalTemplate />
-        </ProtectedRoute>
+        </FormProtectedRoute>
       } />
       
       <Route path="/patients/:patientId/eye-exam" element={
-        <ProtectedRoute>
+        <FormProtectedRoute formKey="eyeExam">
           <EyeExamForm />
-        </ProtectedRoute>
+        </FormProtectedRoute>
       } />
       
       <Route path="/patients/:patientId/eye-exam/preview" element={
-        <ProtectedRoute>
+        <FormProtectedRoute formKey="eyeExam">
           <EyeExamTemplate />
-        </ProtectedRoute>
+        </FormProtectedRoute>
       } />
       
       <Route path="/patients/:patientId/form-33" element={
-        <ProtectedRoute>
+        <FormProtectedRoute formKey="form33">
           <Form33Form />
-        </ProtectedRoute>
+        </FormProtectedRoute>
       } />
       
       <Route path="/patients/:patientId/form-33/preview" element={
-        <ProtectedRoute>
+        <FormProtectedRoute formKey="form33">
           <Form33Template />
-        </ProtectedRoute>
+        </FormProtectedRoute>
       } />
       
       <Route path="/patients/:patientId/health-register" element={
-        <ProtectedRoute>
+        <FormProtectedRoute formKey="healthRegister">
           <HealthRegisterForm />
-        </ProtectedRoute>
+        </FormProtectedRoute>
       } />
       
       <Route path="/patients/:patientId/health-register/preview" element={
-        <ProtectedRoute>
+        <FormProtectedRoute formKey="healthRegister">
           <HealthRegisterTemplate />
-        </ProtectedRoute>
+        </FormProtectedRoute>
       } />
       
       <Route path="/patients/:patientId/xray-report" element={
-        <ProtectedRoute>
+        <FormProtectedRoute formKey="xrayReport">
           <XRayReportForm />
-        </ProtectedRoute>
+        </FormProtectedRoute>
       } />
       
       <Route path="/patients/:patientId/xray-report/preview" element={
-        <ProtectedRoute>
+        <FormProtectedRoute formKey="xrayReport">
           <XRayReportTemplate />
-        </ProtectedRoute>
+        </FormProtectedRoute>
       } />
       
       <Route path="/patients/:patientId/full-report/preview" element={
