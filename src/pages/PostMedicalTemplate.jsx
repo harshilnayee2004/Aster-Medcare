@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { formatDate, getPatient } from "../utils/localStorage.js";
 import { postMedicalTests } from "./PostMedicalForm.jsx";
@@ -18,15 +19,42 @@ function certDateParts(value) {
   return [day, month, year, hourStr, minutes, ampm];
 }
 
-export default function PostMedicalTemplate({ hideActions = false }) {
+export default function PostMedicalTemplate({ hideActions = false, patient: propPatient }) {
   const { patientId } = useParams();
-  const patient = getPatient(patientId);
+  const [patient, setPatient] = useState(propPatient || null);
+  const [loading, setLoading] = useState(!propPatient);
+
+  useEffect(() => {
+    if (propPatient) {
+      setPatient(propPatient);
+      setLoading(false);
+      return;
+    }
+
+    async function loadData() {
+      try {
+        const data = await getPatient(patientId);
+        setPatient(data);
+      } catch (err) {
+        console.error("Failed to load patient:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [patientId, propPatient]);
+
+  if (loading) {
+    return <div className="text-center py-20 text-slate-500 font-semibold">Loading Post Medical Report...</div>;
+  }
 
   if (!patient) return <Navigate to="/patients" replace />;
 
-  const form = patient.postMedical || {};
-  const reportDate = form.savedAt ? formatDate(form.savedAt).replaceAll("/", " / ") : formatDate().replaceAll("/", " / ");
-  const [day, month, year, hour, minute, ampm] = certDateParts(form.certificateDate || form.savedAt);
+  const forms = patient.forms || {};
+  const form = forms.postMedical?.data || {};
+  const savedAt = forms.postMedical?.savedAt;
+  const reportDate = savedAt ? formatDate(savedAt).replaceAll("/", " / ") : formatDate().replaceAll("/", " / ");
+  const [day, month, year, hour, minute, ampm] = certDateParts(form.certificateDate || savedAt);
 
   return (
     <main className={hideActions ? "" : "template-screen"}>

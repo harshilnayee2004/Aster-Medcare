@@ -1,18 +1,74 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import { getPatient, updatePatientForm } from "../utils/localStorage.js";
+import api from "../services/api";
 
 export default function XRayReportForm() {
   const { patientId } = useParams();
-  const patient = getPatient(patientId);
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    photo: "",
-    ...(patient?.xrayReport || {})
-  });
+  const [patient, setPatient] = useState(null);
+  const [form, setForm] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saveStatus, setSaveStatus] = useState("Saved ✓");
 
-  if (!patient) return <Navigate to="/patients" replace />;
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const patientData = await getPatient(patientId);
+        setPatient(patientData);
+        
+        try {
+          const res = await api.get(`/patients/${patientId}/forms/xrayReport`);
+          if (res.data && res.data.formExists) {
+            setForm({
+              photo: "",
+              ...res.data.form.data
+            });
+          } else {
+            setForm({ photo: "" });
+          }
+        } catch {
+          setForm({ photo: "" });
+        }
+      } catch (err) {
+        console.error("Failed to load patient:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [patientId]);
+
+  // Debounced auto-save
+  useEffect(() => {
+    if (!form || loading) return;
+
+    setSaveStatus("Saving...");
+    const timer = setTimeout(async () => {
+      try {
+        await updatePatientForm(patientId, "xrayReport", form);
+        setSaveStatus("Saved ✓");
+      } catch (err) {
+        console.error("Auto-save failed:", err);
+        setSaveStatus("Error ✗");
+      }
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [form]);
+
+  if (loading) {
+    return (
+      <AppShell patientId={patientId}>
+        <div className="text-center py-20 text-slate-500 font-medium">Loading form details...</div>
+      </AppShell>
+    );
+  }
+
+  if (!patient || !form) {
+    return <Navigate to="/patients" replace />;
+  }
 
   function handlePhoto(file) {
     if (!file) return;
@@ -23,13 +79,19 @@ export default function XRayReportForm() {
     reader.readAsDataURL(file);
   }
 
-  function save() {
-    updatePatientForm(patientId, "xrayReport", form);
+  async function save() {
+    setSaveStatus("Saving...");
+    try {
+      await updatePatientForm(patientId, "xrayReport", form);
+      setSaveStatus("Saved ✓");
+    } catch {
+      setSaveStatus("Error ✗");
+    }
   }
 
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault();
-    save();
+    await save();
     navigate(`/patients/${patientId}`);
   }
 
@@ -45,12 +107,19 @@ export default function XRayReportForm() {
   return (
     <AppShell patientId={patientId}>
       <form onSubmit={submit} className="mx-auto max-w-4xl rounded-lg border border-line bg-white p-8 shadow-soft">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex items-center justify-between border-b border-line pb-6">
           <div>
-            <h1 className="text-2xl font-semibold">X-Ray Report</h1>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">X-Ray Report</h1>
             <p className="mt-2 text-muted">Upload patient chest X-Ray or medical scans · {patient.name} · {patient.patientId}</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+              saveStatus === "Saved ✓" ? "bg-green-50 text-green-700 border border-green-200" :
+              saveStatus === "Saving..." ? "bg-amber-50 text-amber-700 border border-amber-200 animate-pulse" :
+              "bg-red-50 text-red-700 border border-red-200"
+            }`}>
+              {saveStatus}
+            </span>
             <button type="button" onClick={preview} className="button-secondary" disabled={!form.photo}>Preview Report</button>
             <button type="submit" className="button-primary">Save Report</button>
           </div>

@@ -642,24 +642,7 @@
   margin: 0 0 3px 0;
 }
 
-@media print {
-  .template-actions {
-    display: none;
-  }
-
-  .template-screen {
-    background: white;
-    padding: 0;
-  }
-
-  .post-page,
-  .eye-page,
-  .form32-page,
-  .form33-page,
-  .xray-page {
-    margin: 0 auto;
-  }
-}
+/* Print block consolidated at the bottom */
 
 /* FORM 32 - HEALTH REGISTER */
 .form32-page {
@@ -776,16 +759,72 @@
   text-decoration: underline;
 }
 
-/* PRINT PAGE BREAKS */
+/* PRINT STYLING & PAGE BREAKS */
 .page-break {
   page-break-after: always;
   break-after: page;
 }
 
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm !important; /* Forces 10mm margins on print, hiding headers/footers */
+  }
+
+  html, body {
+    width: 190mm;
+    height: 277mm;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .template-screen {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: auto !important;
+  }
+
+  .template-actions {
+    display: none !important;
+  }
+
   .page-break {
-    page-break-after: always;
-    break-after: page;
+    page-break-before: always !important;
+    page-break-after: always !important;
+    break-before: page !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Force each report container to fit inside the margins */
+  .post-page,
+  .eye-page,
+  .form33-page,
+  .form32-page,
+  .xray-page {
+    width: 190mm !important; /* 210mm - 20mm margin */
+    height: 277mm !important; /* 297mm - 20mm margin */
+    max-height: 277mm !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+    padding: 8mm 10mm !important; /* Internal padding inside the border */
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow: hidden !important; /* Prevent any accidental extra page breaks */
+    border: 2px solid #b3463b !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
+  /* Compact table spacing to ensure content fits */
+  .post-table, .eye-info, .eye-params, .eye-titmus, .form33-fitness, .form32-table {
+    margin-bottom: 4px !important;
   }
 }
 

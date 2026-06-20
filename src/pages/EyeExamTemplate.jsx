@@ -1,14 +1,42 @@
+import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { formatDate, getPatient } from "../utils/localStorage.js";
 
-export default function EyeExamTemplate({ hideActions = false }) {
+export default function EyeExamTemplate({ hideActions = false, patient: propPatient }) {
   const { patientId } = useParams();
-  const patient = getPatient(patientId);
+  const [patient, setPatient] = useState(propPatient || null);
+  const [loading, setLoading] = useState(!propPatient);
+
+  useEffect(() => {
+    if (propPatient) {
+      setPatient(propPatient);
+      setLoading(false);
+      return;
+    }
+
+    async function loadData() {
+      try {
+        const data = await getPatient(patientId);
+        setPatient(data);
+      } catch (err) {
+        console.error("Failed to load patient:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [patientId, propPatient]);
+
+  if (loading) {
+    return <div className="text-center py-20 text-slate-500 font-semibold">Loading Eye Exam Report...</div>;
+  }
 
   if (!patient) return <Navigate to="/patients" replace />;
 
-  const form = patient.eyeExam || {};
-  const date = form.savedAt ? formatDate(form.savedAt) : formatDate();
+  const forms = patient.forms || {};
+  const form = forms.eyeExam?.data || {};
+  const savedAt = forms.eyeExam?.savedAt;
+  const date = savedAt ? formatDate(savedAt) : formatDate();
 
   return (
     <main className={hideActions ? "" : "template-screen"}>

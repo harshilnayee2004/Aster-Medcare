@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import { getPatient, updatePatientForm } from "../utils/localStorage.js";
+import api from "../services/api";
+import DateField from "../components/DateField.jsx";
 
 function baseForm(patient) {
   return {
@@ -31,23 +33,87 @@ function baseForm(patient) {
 
 export default function HealthRegisterForm() {
   const { patientId } = useParams();
-  const patient = getPatient(patientId);
   const navigate = useNavigate();
-  const [form, setForm] = useState({ ...baseForm(patient), ...(patient?.healthRegister || {}) });
+  const [patient, setPatient] = useState(null);
+  const [form, setForm] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saveStatus, setSaveStatus] = useState("Saved ✓");
 
-  if (!patient) return <Navigate to="/patients" replace />;
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const patientData = await getPatient(patientId);
+        setPatient(patientData);
+        
+        try {
+          const res = await api.get(`/patients/${patientId}/forms/healthRegister`);
+          if (res.data && res.data.formExists) {
+            setForm({
+              ...baseForm(patientData),
+              ...res.data.form.data
+            });
+          } else {
+            setForm(baseForm(patientData));
+          }
+        } catch {
+          setForm(baseForm(patientData));
+        }
+      } catch (err) {
+        console.error("Failed to load patient:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [patientId]);
+
+  // Debounced auto-save
+  useEffect(() => {
+    if (!form || loading) return;
+
+    setSaveStatus("Saving...");
+    const timer = setTimeout(async () => {
+      try {
+        await updatePatientForm(patientId, "healthRegister", form);
+        setSaveStatus("Saved ✓");
+      } catch (err) {
+        console.error("Auto-save failed:", err);
+        setSaveStatus("Error ✗");
+      }
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [form]);
+
+  if (loading) {
+    return (
+      <AppShell patientId={patientId}>
+        <div className="text-center py-20 text-slate-500 font-medium">Loading form details...</div>
+      </AppShell>
+    );
+  }
+
+  if (!patient || !form) {
+    return <Navigate to="/patients" replace />;
+  }
 
   function updateField(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
-  function save() {
-    updatePatientForm(patientId, "healthRegister", form);
+  async function save() {
+    setSaveStatus("Saving...");
+    try {
+      await updatePatientForm(patientId, "healthRegister", form);
+      setSaveStatus("Saved ✓");
+    } catch {
+      setSaveStatus("Error ✗");
+    }
   }
 
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault();
-    save();
+    await save();
     navigate(`/patients/${patientId}`);
   }
 
@@ -64,7 +130,14 @@ export default function HealthRegisterForm() {
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Form No. 32</h1>
             <p className="mt-1 text-sm text-slate-500">Health Register diagnostics and medical observation tracking for {patient.name}.</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+              saveStatus === "Saved ✓" ? "bg-green-50 text-green-700 border border-green-200" :
+              saveStatus === "Saving..." ? "bg-amber-50 text-amber-700 border border-amber-200 animate-pulse" :
+              "bg-red-50 text-red-700 border border-red-200"
+            }`}>
+              {saveStatus}
+            </span>
             <button type="button" onClick={preview} className="button-secondary">Preview Report</button>
             <button type="submit" className="button-primary">Save Form</button>
           </div>
@@ -75,7 +148,7 @@ export default function HealthRegisterForm() {
             <Field label="Serial Number" field="serialNumber" value={form.serialNumber} onChange={updateField} />
             <Field label="Name of Worker" field="name" value={form.name} onChange={updateField} />
             <Field label="Sex" field="sex" value={form.sex} onChange={updateField} />
-            <Field label="Date of Birth" field="dateOfBirth" type="date" value={form.dateOfBirth} onChange={updateField} />
+            <DateField label="Date of Birth" type="date" value={form.dateOfBirth} onChange={(val) => updateField("dateOfBirth", val)} />
           </Section>
 
           <Section title="2. Department & Process Details">
@@ -84,13 +157,13 @@ export default function HealthRegisterForm() {
             <Field label="Dangerous Process / Operation" field="dangerousOperation" value={form.dangerousOperation} onChange={updateField} />
             <Field label="Nature of Job or Occupation" field="jobNature" value={form.jobNature} onChange={updateField} />
             <Field label="Raw Materials Exposed To" field="rawMaterialsExposed" value={form.rawMaterialsExposed} onChange={updateField} />
-            <Field label="Date of Posting" field="dateOfPosting" type="date" value={form.dateOfPosting} onChange={updateField} />
-            <Field label="Date of Leaving / Transfer" field="dateOfLeaving" type="date" value={form.dateOfLeaving} onChange={updateField} />
+            <DateField label="Date of Posting" type="date" value={form.dateOfPosting} onChange={(val) => updateField("dateOfPosting", val)} />
+            <DateField label="Date of Leaving / Transfer" type="date" value={form.dateOfLeaving} onChange={(val) => updateField("dateOfLeaving", val)} />
             <Field label="Reasons for Discharge / Leaving" field="reasonsForLeaving" value={form.reasonsForLeaving} onChange={updateField} />
           </Section>
 
           <Section title="3. Medical Examination & Results">
-            <Field label="Date of Examination" field="examinationDate" type="date" value={form.examinationDate} onChange={updateField} />
+            <DateField label="Date of Examination" type="date" value={form.examinationDate} onChange={(val) => updateField("examinationDate", val)} />
             <Field label="Signs and Symptoms Observed" field="signsSymptoms" value={form.signsSymptoms} onChange={updateField} />
             <Field label="Nature of Tests" field="natureOfTests" value={form.natureOfTests} onChange={updateField} />
             <Choice label="Result Status" field="result" value={form.result} onChange={updateField} options={["FIT", "UNFIT"]} />
@@ -99,14 +172,14 @@ export default function HealthRegisterForm() {
           <Section title="4. If Declared Unfit for Work">
             <Field label="Period of Temporary Withdrawal" field="withdrawalPeriod" value={form.withdrawalPeriod} onChange={updateField} />
             <Field label="Reasons for Withdrawal" field="withdrawalReason" value={form.withdrawalReason} onChange={updateField} />
-            <Field label="Date of Declaring Unfit" field="dateDeclaredUnfit" type="date" value={form.dateDeclaredUnfit} onChange={updateField} />
-            <Field label="Date of Issuing Fitness Certificate" field="dateFitnessCertificateIssued" type="date" value={form.dateFitnessCertificateIssued} onChange={updateField} />
+            <DateField label="Date of Declaring Unfit" type="date" value={form.dateDeclaredUnfit} onChange={(val) => updateField("dateDeclaredUnfit", val)} />
+            <DateField label="Date of Issuing Fitness Certificate" type="date" value={form.dateFitnessCertificateIssued} onChange={(val) => updateField("dateFitnessCertificateIssued", val)} />
           </Section>
 
           <section className="border border-line rounded-xl bg-slate-50/20 p-6">
             <h2 className="mb-5 text-base font-bold text-slate-800 tracking-tight border-b border-line pb-2">5. Medical Officer Signature</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Field label="Signature Date & Time" field="doctorSignatureDate" type="datetime-local" value={form.doctorSignatureDate} onChange={updateField} />
+              <DateField label="Signature Date & Time" type="datetime-local" value={form.doctorSignatureDate} onChange={(val) => updateField("doctorSignatureDate", val)} />
             </div>
           </section>
         </div>

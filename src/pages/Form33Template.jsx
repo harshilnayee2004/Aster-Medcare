@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { formatDate, getPatient } from "../utils/localStorage.js";
 
@@ -28,16 +29,44 @@ function datetimeParts(value) {
   return [day, month, year, hourStr, minutes, ampm];
 }
 
-export default function Form33Template({ hideActions = false }) {
+export default function Form33Template({ hideActions = false, patient: propPatient }) {
   const { patientId } = useParams();
-  const patient = getPatient(patientId);
+  const [patient, setPatient] = useState(propPatient || null);
+  const [loading, setLoading] = useState(!propPatient);
+
+  useEffect(() => {
+    if (propPatient) {
+      setPatient(propPatient);
+      setLoading(false);
+      return;
+    }
+
+    async function loadData() {
+      try {
+        const data = await getPatient(patientId);
+        setPatient(data);
+      } catch (err) {
+        console.error("Failed to load patient:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [patientId, propPatient]);
+
+  if (loading) {
+    return <div className="text-center py-20 text-slate-500 font-semibold">Loading Form 33 Report...</div>;
+  }
 
   if (!patient) return <Navigate to="/patients" replace />;
 
-  const form = patient.form33 || {};
-  const exam = dateParts(form.examinationDate || form.savedAt);
-  const doctor = dateParts(form.doctorSignatureDate || form.savedAt);
-  const [docDay, docMonth, docYear, docHour, docMinute, docAmpm] = datetimeParts(form.doctorSignatureDate || form.savedAt);
+  const forms = patient.forms || {};
+  const form = forms.form33?.data || {};
+  const savedAt = forms.form33?.savedAt;
+
+  const exam = dateParts(form.examinationDate || savedAt);
+  const doctor = dateParts(form.doctorSignatureDate || savedAt);
+  const [docDay, docMonth, docYear, docHour, docMinute, docAmpm] = datetimeParts(form.doctorSignatureDate || savedAt);
 
   return (
     <main className={hideActions ? "" : "template-screen"}>
@@ -59,7 +88,7 @@ export default function Form33Template({ hideActions = false }) {
 
         <FieldRow num="1." label="Serial number in the register of adult workers" value={form.serialNumber} />
         <FieldRow num="2." label="Name of the person examined" value={form.name || patient.name} />
-        <FieldRow num="3." label="Father's / Husband Name" value={form.fatherHusbandName} />
+        <FieldRow num="3." label="Father's / Husband Name" value={form.fatherHusbandName || patient.fatherName} />
         <FieldRow num="4." label="Sex" value={form.sex || patient.gender} />
         <FieldRow num="5." label="Residence with Pin code" value={form.residence || patient.address} />
 
@@ -84,7 +113,7 @@ export default function Form33Template({ hideActions = false }) {
         <div className="form33-sub8"><span className="form33-sub8-label">(b) Dangerous operation</span><span className="form33-sub8-rest">:- {form.dangerousOperation || "No"}&nbsp;&nbsp;Area Name:-<span className="form33-filled form33-short">{form.dangerousArea}</span></span></div>
 
         <div className="form33-cert-block">
-          <p>I certify that I have personally examined the above named person whose identification marks are <span className="form33-filled form33-wide">{form.identificationMarks}</span> and who is desirous of being employed in <span className="form33-filled form33-wide">{form.employedIn}</span>.</p>
+          <p>I certify that I have personally examined the above named person whose identification marks are <span className="form33-filled form33-wide">{form.identificationMarks || patient.identificationMarks}</span> and who is desirous of being employed in <span className="form33-filled form33-wide">{form.employedIn}</span>.</p>
           <p>Above mentioned process/operation and that his/her, age, as can be ascertained from my examination, is <span className="form33-filled form33-short">{form.examinedAge || patient.age}</span> years.</p>
           <p>In my opinion he / she is {form.fitStatus === "UNFIT" ? "unfit" : "fit"} for employment in the Said manufacturing process/operation.</p>
         </div>

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { getPatient } from "../utils/localStorage.js";
+import api from "../services/api";
 import HealthRegisterTemplate from "./HealthRegisterTemplate.jsx";
 import EyeExamTemplate from "./EyeExamTemplate.jsx";
 import Form33Template from "./Form33Template.jsx";
@@ -9,23 +9,43 @@ import XRayReportTemplate from "./XRayReportTemplate.jsx";
 
 export default function FullReportTemplate() {
   const { patientId } = useParams();
-  const patient = getPatient(patientId);
+  const [patient, setPatient] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const response = await api.get(`/patients/${patientId}`);
+        setPatient(response.data);
+      } catch (err) {
+        console.error("Failed to load patient record:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [patientId]);
+
+  if (loading) {
+    return <div className="text-center py-20 text-slate-500 font-semibold">Compiling Full Medical Dossier...</div>;
+  }
 
   if (!patient) return <Navigate to="/patients" replace />;
 
+  const forms = patient.forms || {};
   const completedCount = [
-    patient.healthRegister,
-    patient.eyeExam,
-    patient.form33,
-    patient.postMedical,
-    patient.xrayReport,
+    forms.healthRegister?.savedAt,
+    forms.eyeExam?.savedAt,
+    forms.form33?.savedAt,
+    forms.postMedical?.savedAt,
+    forms.xrayReport?.savedAt,
   ].filter(Boolean).length;
 
   function copyShareLink() {
     try {
+      // Base64 encode the patient data for a clean shareable link
       const dataStr = JSON.stringify(patient);
-      // Safe base64 conversion supporting UTF-8 characters
       const base64 = btoa(unescape(encodeURIComponent(dataStr)));
       const shareUrl = `${window.location.origin}?sharedData=${base64}`;
       navigator.clipboard.writeText(shareUrl);
@@ -35,6 +55,18 @@ export default function FullReportTemplate() {
       console.error("Failed to generate share link:", e);
       alert("Could not generate shareable link.");
     }
+  }
+
+  function handlePrint() {
+    const originalTitle = document.title;
+    if (patient) {
+      const sanitizedName = patient.name.replace(/[^a-zA-Z0-9]/g, "_");
+      document.title = `${sanitizedName}_${patient.patientId}_Combined_Medical_Report`;
+    }
+    window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 100);
   }
 
   return (
@@ -56,7 +88,7 @@ export default function FullReportTemplate() {
           >
             {copied ? "Link Copied! ✓" : "Copy Share Link"}
           </button>
-          <button onClick={() => window.print()} className="button-primary !h-10 px-4 flex items-center justify-center">
+          <button onClick={handlePrint} className="button-primary !h-10 px-4 flex items-center justify-center">
             Print / Save PDF
           </button>
         </div>
@@ -69,29 +101,29 @@ export default function FullReportTemplate() {
           </div>
         ) : (
           <>
-            {patient.healthRegister && (
+            {forms.healthRegister?.savedAt && (
               <div className="page-break">
-                <HealthRegisterTemplate hideActions={true} />
+                <HealthRegisterTemplate hideActions={true} patient={patient} />
               </div>
             )}
-            {patient.eyeExam && (
+            {forms.eyeExam?.savedAt && (
               <div className="page-break">
-                <EyeExamTemplate hideActions={true} />
+                <EyeExamTemplate hideActions={true} patient={patient} />
               </div>
             )}
-            {patient.form33 && (
+            {forms.form33?.savedAt && (
               <div className="page-break">
-                <Form33Template hideActions={true} />
+                <Form33Template hideActions={true} patient={patient} />
               </div>
             )}
-            {patient.postMedical && (
+            {forms.postMedical?.savedAt && (
               <div className="page-break">
-                <PostMedicalTemplate hideActions={true} />
+                <PostMedicalTemplate hideActions={true} patient={patient} />
               </div>
             )}
-            {patient.xrayReport && (
+            {forms.xrayReport?.savedAt && (
               <div className="page-break">
-                <XRayReportTemplate hideActions={true} />
+                <XRayReportTemplate hideActions={true} patient={patient} />
               </div>
             )}
           </>

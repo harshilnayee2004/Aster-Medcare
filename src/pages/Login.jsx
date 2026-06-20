@@ -1,11 +1,28 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    navigate("/patients");
+    setError("");
+    setLoading(true);
+    try {
+      await login(email, password);
+      navigate("/patients");
+    } catch (err) {
+      console.error("Login failed:", err);
+      setError(err.response?.data?.message || "Invalid email or password");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -23,18 +40,50 @@ export default function Login() {
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Sign in</h1>
         </div>
 
-        <label className="field-label" htmlFor="username">
-          Username
+        {error && (
+          <div className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4.5 text-sm text-red-600 font-semibold">
+            {error}
+          </div>
+        )}
+
+        <label className="field-label" htmlFor="email">
+          Email Address
         </label>
-        <input id="username" className="input mb-5" placeholder="Enter username" />
+        <input 
+          id="email" 
+          type="email"
+          className="input mb-5" 
+          placeholder="Enter email address" 
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
 
         <label className="field-label" htmlFor="password">
           Password
         </label>
-        <input id="password" type="password" className="input mb-8" placeholder="Enter password" />
+        <input 
+          id="password" 
+          type="password" 
+          className="input mb-8" 
+          placeholder="Enter password" 
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
-        <button className="button-primary w-full" type="submit">
-          Login
+        <button className="button-primary w-full flex items-center justify-center" type="submit" disabled={loading}>
+          {loading ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Signing in...
+            </>
+          ) : (
+            "Login"
+          )}
         </button>
       </form>
     </main>

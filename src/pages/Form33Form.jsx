@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import { getPatient, updatePatientForm } from "../utils/localStorage.js";
+import api from "../services/api";
+import DateField from "../components/DateField.jsx";
 
 function baseForm(patient) {
   return {
     serialNumber: "",
     name: patient?.name || "",
-    fatherHusbandName: "",
+    fatherHusbandName: patient?.fatherName || "",
     sex: patient?.gender || "",
     residence: patient?.address || "",
     pinCode: "",
@@ -20,7 +22,7 @@ function baseForm(patient) {
     hazardousArea: "",
     dangerousOperation: "No",
     dangerousArea: "",
-    identificationMarks: "",
+    identificationMarks: patient?.identificationMarks || "",
     employedIn: "",
     examinedAge: patient?.age || "",
     fitStatus: "FIT",
@@ -35,23 +37,87 @@ function baseForm(patient) {
 
 export default function Form33Form() {
   const { patientId } = useParams();
-  const patient = getPatient(patientId);
   const navigate = useNavigate();
-  const [form, setForm] = useState({ ...baseForm(patient), ...(patient?.form33 || {}) });
+  const [patient, setPatient] = useState(null);
+  const [form, setForm] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saveStatus, setSaveStatus] = useState("Saved ✓");
 
-  if (!patient) return <Navigate to="/patients" replace />;
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const patientData = await getPatient(patientId);
+        setPatient(patientData);
+        
+        try {
+          const res = await api.get(`/patients/${patientId}/forms/form33`);
+          if (res.data && res.data.formExists) {
+            setForm({
+              ...baseForm(patientData),
+              ...res.data.form.data
+            });
+          } else {
+            setForm(baseForm(patientData));
+          }
+        } catch {
+          setForm(baseForm(patientData));
+        }
+      } catch (err) {
+        console.error("Failed to load patient:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [patientId]);
+
+  // Debounced auto-save
+  useEffect(() => {
+    if (!form || loading) return;
+
+    setSaveStatus("Saving...");
+    const timer = setTimeout(async () => {
+      try {
+        await updatePatientForm(patientId, "form33", form);
+        setSaveStatus("Saved ✓");
+      } catch (err) {
+        console.error("Auto-save failed:", err);
+        setSaveStatus("Error ✗");
+      }
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [form]);
+
+  if (loading) {
+    return (
+      <AppShell patientId={patientId}>
+        <div className="text-center py-20 text-slate-500 font-medium">Loading form details...</div>
+      </AppShell>
+    );
+  }
+
+  if (!patient || !form) {
+    return <Navigate to="/patients" replace />;
+  }
 
   function updateField(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
-  function save() {
-    updatePatientForm(patientId, "form33", form);
+  async function save() {
+    setSaveStatus("Saving...");
+    try {
+      await updatePatientForm(patientId, "form33", form);
+      setSaveStatus("Saved ✓");
+    } catch {
+      setSaveStatus("Error ✗");
+    }
   }
 
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault();
-    save();
+    await save();
     navigate(`/patients/${patientId}`);
   }
 
@@ -68,7 +134,14 @@ export default function Form33Form() {
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Form No. 33</h1>
             <p className="mt-1 text-sm text-slate-500">Certificate of Fitness of employment in hazardous process and operations for {patient.name}.</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+              saveStatus === "Saved ✓" ? "bg-green-50 text-green-700 border border-green-200" :
+              saveStatus === "Saving..." ? "bg-amber-50 text-amber-700 border border-amber-200 animate-pulse" :
+              "bg-red-50 text-red-700 border border-red-200"
+            }`}>
+              {saveStatus}
+            </span>
             <button type="button" onClick={preview} className="button-secondary">Preview Report</button>
             <button type="submit" className="button-primary">Save Form</button>
           </div>
@@ -84,7 +157,7 @@ export default function Form33Form() {
             <Field label="Pin Code" field="pinCode" value={form.pinCode} onChange={updateField} />
             <Field label="City" field="city" value={form.city} onChange={updateField} />
             <Field label="State" field="state" value={form.state} onChange={updateField} />
-            <Field label="Date of Birth" field="dateOfBirth" type="date" value={form.dateOfBirth} onChange={updateField} />
+            <DateField label="Date of Birth" type="date" value={form.dateOfBirth} onChange={(val) => updateField("dateOfBirth", val)} />
             <Field label="Examined Age (Years)" field="examinedAge" value={form.examinedAge} onChange={updateField} />
           </Section>
 
@@ -103,11 +176,11 @@ export default function Form33Form() {
             <Choice label="Fit Status" field="fitStatus" value={form.fitStatus} onChange={updateField} options={["FIT", "UNFIT"]} />
             <Field label="Unfit Reason" field="unfitReason" value={form.unfitReason} onChange={updateField} />
             <Field label="Previous Certificate Serial No." field="previousCertificate" value={form.previousCertificate} onChange={updateField} />
-            <Field label="Date of Examination" field="examinationDate" type="date" value={form.examinationDate} onChange={updateField} />
+            <DateField label="Date of Examination" type="date" value={form.examinationDate} onChange={(val) => updateField("examinationDate", val)} />
             <Field label="Extension / Unfit Note" field="extensionNote" value={form.extensionNote} onChange={updateField} />
             <Field label="Observed Signs & Symptoms" field="symptoms" value={form.symptoms} onChange={updateField} />
             <div className="col-span-1 sm:col-span-2">
-              <Field label="Doctor Signature Date & Time" field="doctorSignatureDate" type="datetime-local" value={form.doctorSignatureDate} onChange={updateField} />
+              <DateField label="Doctor Signature Date & Time" type="datetime-local" value={form.doctorSignatureDate} onChange={(val) => updateField("doctorSignatureDate", val)} />
             </div>
           </Section>
         </div>

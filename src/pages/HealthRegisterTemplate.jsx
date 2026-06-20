@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { formatDate, getPatient } from "../utils/localStorage.js";
 
@@ -5,13 +6,40 @@ function displayDate(value) {
   return value ? formatDate(value) : "";
 }
 
-export default function HealthRegisterTemplate({ hideActions = false }) {
+export default function HealthRegisterTemplate({ hideActions = false, patient: propPatient }) {
   const { patientId } = useParams();
-  const patient = getPatient(patientId);
+  const [patient, setPatient] = useState(propPatient || null);
+  const [loading, setLoading] = useState(!propPatient);
+
+  useEffect(() => {
+    if (propPatient) {
+      setPatient(propPatient);
+      setLoading(false);
+      return;
+    }
+
+    async function loadData() {
+      try {
+        const data = await getPatient(patientId);
+        setPatient(data);
+      } catch (err) {
+        console.error("Failed to load patient:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [patientId, propPatient]);
+
+  if (loading) {
+    return <div className="text-center py-20 text-slate-500 font-semibold">Loading Health Register Report...</div>;
+  }
 
   if (!patient) return <Navigate to="/patients" replace />;
 
-  const form = patient.healthRegister || {};
+  const forms = patient.forms || {};
+  const form = forms.healthRegister?.data || {};
+  const savedAt = forms.healthRegister?.savedAt;
 
   return (
     <main className={hideActions ? "" : "template-screen"}>
@@ -110,7 +138,7 @@ export default function HealthRegisterTemplate({ hideActions = false }) {
               <td rowSpan="4" style={{ borderRight: "1px solid #000" }}></td>
               <td></td>
               <td>Date</td>
-              <td className="form32-ctr">{displayDate(form.examinationDate || form.savedAt)}</td>
+              <td className="form32-ctr">{displayDate(form.examinationDate || savedAt)}</td>
             </tr>
 
             {/* ROW 10 */}
@@ -165,7 +193,7 @@ export default function HealthRegisterTemplate({ hideActions = false }) {
             <tr style={{ height: "88px" }}>
               <td className="form32-ctr form32-mid">17</td>
               <td className="form32-mid">Signature with date of the factory Medical Officer/ the Certifying Surgeon.</td>
-              <td className="form32-ctr form32-bot" colSpan="2">{displayDate(form.doctorSignatureDate || form.savedAt)}</td>
+              <td className="form32-ctr form32-bot" colSpan="2">{displayDate(form.doctorSignatureDate || savedAt)}</td>
             </tr>
           </tbody>
         </table>

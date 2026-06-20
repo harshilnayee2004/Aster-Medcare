@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import { getPatient, updatePatientForm } from "../utils/localStorage.js";
+import api from "../services/api";
+import DateField from "../components/DateField.jsx";
 
 const tests = [
   ["generalExamination", "General Examination"],
@@ -22,31 +24,102 @@ const defaults = Object.fromEntries(tests.map(([key]) => [key, "YES"]));
 
 export default function PostMedicalForm() {
   const { patientId } = useParams();
-  const patient = getPatient(patientId);
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    ...defaults,
-    treatmentRecommendation: "No Any Medication Requirement...!!!",
-    fitStatus: "FIT",
-    employmentTill: "",
-    certificateDate: "",
-    ...(patient?.postMedical || {}),
-  });
+  const [patient, setPatient] = useState(null);
+  const [form, setForm] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saveStatus, setSaveStatus] = useState("Saved ✓");
 
-  if (!patient) return <Navigate to="/patients" replace />;
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const patientData = await getPatient(patientId);
+        setPatient(patientData);
+        
+        // Load existing form from DB
+        try {
+          const res = await api.get(`/patients/${patientId}/forms/postMedical`);
+          if (res.data && res.data.formExists) {
+            setForm({
+              ...defaults,
+              ...res.data.form.data
+            });
+          } else {
+            setForm({
+              ...defaults,
+              treatmentRecommendation: "No Any Medication Requirement...!!!",
+              fitStatus: "FIT",
+              employmentTill: "",
+              certificateDate: "",
+            });
+          }
+        } catch {
+          // If no form in DB, use default
+          setForm({
+            ...defaults,
+            treatmentRecommendation: "No Any Medication Requirement...!!!",
+            fitStatus: "FIT",
+            employmentTill: "",
+            certificateDate: "",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load patient:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [patientId]);
+
+  // Debounced auto-save effect
+  useEffect(() => {
+    if (!form || loading) return;
+
+    setSaveStatus("Saving...");
+    const timer = setTimeout(async () => {
+      try {
+        await updatePatientForm(patientId, "postMedical", form);
+        setSaveStatus("Saved ✓");
+      } catch (err) {
+        console.error("Auto-save error:", err);
+        setSaveStatus("Error ✗");
+      }
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [form]);
+
+  if (loading) {
+    return (
+      <AppShell patientId={patientId}>
+        <div className="text-center py-20 text-slate-500 font-medium">Loading form details...</div>
+      </AppShell>
+    );
+  }
+
+  if (!patient || !form) {
+    return <Navigate to="/patients" replace />;
+  }
 
   function updateField(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    save();
-    navigate(`/patients/${patientId}`);
+  async function save() {
+    setSaveStatus("Saving...");
+    try {
+      await updatePatientForm(patientId, "postMedical", form);
+      setSaveStatus("Saved ✓");
+    } catch {
+      setSaveStatus("Error ✗");
+    }
   }
 
-  function save() {
-    updatePatientForm(patientId, "postMedical", form);
+  async function handleSubmit(event) {
+    event.preventDefault();
+    await save();
+    navigate(`/patients/${patientId}`);
   }
 
   function preview() {
@@ -62,7 +135,14 @@ export default function PostMedicalForm() {
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Post Medical Evaluation Form</h1>
             <p className="mt-1 text-sm text-slate-500">Log reviews and observations across medical test sections for {patient.name}.</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+              saveStatus === "Saved ✓" ? "bg-green-50 text-green-700 border border-green-200" :
+              saveStatus === "Saving..." ? "bg-amber-50 text-amber-700 border border-amber-200 animate-pulse" :
+              "bg-red-50 text-red-700 border border-red-200"
+            }`}>
+              {saveStatus}
+            </span>
             <button type="button" onClick={preview} className="button-secondary">Preview Report</button>
             <button type="submit" className="button-primary">Save Form</button>
           </div>
@@ -121,15 +201,12 @@ export default function PostMedicalForm() {
                     placeholder="Upcoming annual / biannual date description" 
                   />
                 </div>
-                <div>
-                  <label className="field-label font-semibold text-slate-700">Certificate Signature Date & Time</label>
-                  <input 
-                    className="input" 
-                    type="datetime-local" 
-                    value={form.certificateDate} 
-                    onChange={(event) => updateField("certificateDate", event.target.value)} 
-                  />
-                </div>
+                <DateField 
+                  label="Certificate Signature Date & Time"
+                  type="datetime-local" 
+                  value={form.certificateDate} 
+                  onChange={(val) => updateField("certificateDate", val)} 
+                />
               </div>
             </div>
           </section>
