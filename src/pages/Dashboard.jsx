@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import FormCard from "../components/FormCard.jsx";
-import PatientHeader from "../components/PatientHeader.jsx";
 import FileUpload from "../components/FileUpload.jsx";
-import { formatDateTime, getPatient } from "../utils/localStorage.js";
+import { formatDateTime, getPatient, updatePatientForm } from "../utils/localStorage.js";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -14,6 +13,12 @@ export default function Dashboard() {
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Doctor Review state
+  const [reviewStatus, setReviewStatus] = useState("FIT");
+  const [reviewRemarks, setReviewRemarks] = useState("");
+  const [reviewDate, setReviewDate] = useState("");
+  const [savingReview, setSavingReview] = useState(false);
 
   const hasAccess = (formKey) => {
     if (!currentUser) return false;
@@ -37,10 +42,26 @@ export default function Dashboard() {
     loadPatient();
   }, [patientId]);
 
+  useEffect(() => {
+    if (patient) {
+      const pmData = patient.forms?.postMedical?.data || {};
+      setReviewStatus(pmData.fitStatus || "FIT");
+      setReviewRemarks(pmData.treatmentRecommendation || "");
+      
+      let initialDate = "";
+      if (pmData.certificateDate) {
+        initialDate = pmData.certificateDate.split("T")[0];
+      } else if (patient.forms?.postMedical?.savedAt) {
+        initialDate = patient.forms.postMedical.savedAt.split("T")[0];
+      }
+      setReviewDate(initialDate);
+    }
+  }, [patient]);
+
   if (loading) {
     return (
       <AppShell patientId={patientId}>
-        <div className="text-center py-20 text-slate-500 font-medium">Loading patient details...</div>
+        <div className="text-center py-20 text-slate-500 font-medium animate-pulse">Loading patient details...</div>
       </AppShell>
     );
   }
@@ -67,13 +88,116 @@ export default function Dashboard() {
     forms.xrayReport?.savedAt
   ].filter(Boolean).length;
 
+  const handleSaveReview = async (e) => {
+    e.preventDefault();
+    try {
+      setSavingReview(true);
+      const currentPostForm = forms.postMedical?.data || {};
+      const updatedData = {
+        ...currentPostForm,
+        fitStatus: reviewStatus,
+        treatmentRecommendation: reviewRemarks,
+        certificateDate: reviewDate
+      };
+      
+      await updatePatientForm(patientId, "postMedical", updatedData);
+      
+      // Reload patient details to update state
+      const updatedPatient = await getPatient(patientId);
+      setPatient(updatedPatient);
+      alert("Doctor evaluation saved successfully!");
+    } catch (err) {
+      console.error("Failed to save doctor review:", err);
+      alert("Failed to save doctor review. Please try again.");
+    } finally {
+      setSavingReview(false);
+    }
+  };
+
+  const fitStatusVal = forms.postMedical?.data?.fitStatus || "";
+
   return (
     <AppShell patientId={patientId}>
       <div className="space-y-6">
-        <PatientHeader patient={patient} />
+        {/* Redesigned Premium Patient Header */}
+        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+            <div className="flex items-center gap-4">
+              <div className="grid h-16 w-16 place-items-center rounded-2xl bg-blue-50 text-2xl font-bold text-brand shadow-inner border border-blue-100/50 shrink-0">
+                {patient.name ? patient.name.charAt(0).toUpperCase() : "P"}
+              </div>
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-extrabold text-[#0f172a] tracking-tight">{patient.name}</h1>
+                  {fitStatusVal && (
+                    <span className={`text-xxs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
+                      fitStatusVal.toUpperCase() === "FIT"
+                        ? "bg-green-50 text-green-700 border-green-100"
+                        : "bg-red-50 text-red-700 border-red-100"
+                    }`}>
+                      {fitStatusVal}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Patient ID:</span>
+                  <span className="font-mono rounded bg-blue-50/50 px-2.5 py-0.5 text-xs font-bold text-brand border border-blue-100/50">{patient.patientId}</span>
+                </div>
+              </div>
+            </div>
 
-        {/* Full Report Actions Banner */}
-        <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 text-white shadow-soft flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            {patient.mobile && (
+              <a
+                href={`https://wa.me/${patient.mobile.replace(/\D/g, "").length === 10 ? "91" + patient.mobile.replace(/\D/g, "") : patient.mobile.replace(/\D/g, "")}?text=${encodeURIComponent(
+                  `Hello ${patient.name},\n\nWelcome to Aster Medcare!\nYour Patient ID is: ${patient.patientId}\n\nThank you for choosing Aster Medcare.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 text-sm font-semibold text-white transition hover:bg-[#1ebe57] shadow-sm whitespace-nowrap self-start md:self-auto"
+              >
+                <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.458L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.451 5.437 0 9.862-4.43 9.866-9.872.002-2.637-1.023-5.115-2.885-6.981-1.862-1.865-4.343-2.893-6.983-2.895-5.439 0-9.865 4.432-9.869 9.874-.001 1.562.415 3.09 1.202 4.448l-.992 3.622 3.702-.971zm11.367-7.25c-.27-.135-1.597-.788-1.846-.878-.249-.09-.43-.135-.61.135-.18.27-.697.878-.853 1.058-.156.18-.312.202-.582.067-.27-.135-1.14-.42-2.172-1.34-.803-.715-1.345-1.6-1.503-1.871-.158-.271-.017-.417.118-.552.122-.121.27-.315.405-.472.135-.158.18-.27.27-.45.09-.18.045-.338-.022-.473-.068-.135-.61-1.468-.836-2.012-.22-.53-.443-.459-.61-.468-.157-.008-.339-.01-.521-.01s-.48.067-.73.338c-.25.27-.954.933-.954 2.277s.977 2.64 1.112 2.822c.136.182 1.923 2.936 4.658 4.116.65.28 1.157.447 1.554.573.654.208 1.248.179 1.718.109.524-.078 1.598-.652 1.824-1.282.226-.63.226-1.17.158-1.283-.068-.112-.249-.202-.519-.337z" />
+                </svg>
+                Send WhatsApp Greeting
+              </a>
+            )}
+          </div>
+
+          {/* Demographics Chips */}
+          <div className="mt-6 flex flex-wrap gap-3">
+            <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-2">
+              <span className="text-xxs font-bold text-slate-400 uppercase tracking-wider">Age:</span>
+              <span className="text-sm font-bold text-slate-700">{patient.age} Yrs</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-2">
+              <span className="text-xxs font-bold text-slate-400 uppercase tracking-wider">Gender:</span>
+              <span className="text-sm font-bold text-slate-700">{patient.gender}</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-2">
+              <span className="text-xxs font-bold text-slate-400 uppercase tracking-wider">Mobile:</span>
+              <span className="text-sm font-bold text-slate-700">{patient.mobile || "-"}</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-2">
+              <span className="text-xxs font-bold text-slate-400 uppercase tracking-wider">Company:</span>
+              <span className="text-sm font-bold text-slate-700">{patient.company || "Aster Medcare"}</span>
+            </div>
+            {patient.fatherName && (
+              <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-2">
+                <span className="text-xxs font-bold text-slate-400 uppercase tracking-wider">Father's Name:</span>
+                <span className="text-sm font-bold text-slate-700">{patient.fatherName}</span>
+              </div>
+            )}
+            {patient.occupation && (
+              <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-2">
+                <span className="text-xxs font-bold text-slate-400 uppercase tracking-wider">Occupation:</span>
+                <span className="text-sm font-bold text-slate-700">{patient.occupation}</span>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Dossier compiled actions banner */}
+        <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6 text-white shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div>
             <h2 className="text-lg font-bold tracking-tight">Compiled Medical Dossier</h2>
             <p className="mt-1 text-sm text-slate-300">Generate a unified PDF containing all completed medical forms, ready for download and sharing.</p>
@@ -86,7 +210,7 @@ export default function Dashboard() {
           </div>
           <Link
             to={`/patients/${patientId}/full-report/preview`}
-            className="flex h-11 items-center justify-center gap-2 rounded-lg bg-brand px-6 text-sm font-semibold text-white transition hover:bg-blue-600 active:scale-98 shadow-sm whitespace-nowrap"
+            className="flex h-11 items-center justify-center gap-2 rounded-xl bg-brand px-6 text-sm font-semibold text-white transition hover:bg-blue-600 active:scale-98 shadow-sm whitespace-nowrap"
           >
             <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -96,16 +220,17 @@ export default function Dashboard() {
         </section>
 
         {/* Medical Forms Section */}
-        <section className="rounded-xl border border-line bg-white p-6 sm:p-8 shadow-soft">
+        <section className="rounded-2xl border border-slate-100 bg-white p-6 sm:p-8 shadow-sm">
           <div className="mb-6">
             <h2 className="text-lg font-bold text-slate-800 tracking-tight">Medical Forms</h2>
-            <p className="mt-1 text-sm text-muted">Select any medical evaluation form below to enter patient diagnostics.</p>
+            <p className="mt-1 text-sm text-slate-500">Select any medical evaluation form below to enter patient diagnostics.</p>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl">
             <FormCard
               title="Post Medical Evaluation"
               icon="PM"
               status={forms.postMedical?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms.postMedical?.savedAt}
               to={`/patients/${patientId}/post-medical`}
               disabled={!hasAccess("postMedical")}
             />
@@ -113,6 +238,7 @@ export default function Dashboard() {
               title="Eye Examination"
               icon="EX"
               status={forms.eyeExam?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms.eyeExam?.savedAt}
               to={`/patients/${patientId}/eye-exam`}
               disabled={!hasAccess("eyeExam")}
             />
@@ -120,6 +246,7 @@ export default function Dashboard() {
               title="Form No. 33"
               icon="33"
               status={forms.form33?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms.form33?.savedAt}
               to={`/patients/${patientId}/form-33`}
               disabled={!hasAccess("form33")}
             />
@@ -127,6 +254,7 @@ export default function Dashboard() {
               title="Form No. 32"
               icon="32"
               status={forms.healthRegister?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms.healthRegister?.savedAt}
               to={`/patients/${patientId}/health-register`}
               disabled={!hasAccess("healthRegister")}
             />
@@ -134,6 +262,7 @@ export default function Dashboard() {
               title="X-Ray Report"
               icon="XR"
               status={forms.xrayReport?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms.xrayReport?.savedAt}
               to={`/patients/${patientId}/xray-report`}
               disabled={!hasAccess("xrayReport")}
             />
@@ -141,30 +270,29 @@ export default function Dashboard() {
         </section>
 
         {/* File Attachments Section */}
-        <section className="rounded-xl border border-line bg-white p-6 sm:p-8 shadow-soft grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <section className="rounded-2xl border border-slate-100 bg-white p-6 sm:p-8 shadow-sm grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1 space-y-4">
             <div>
               <h2 className="text-lg font-bold text-slate-800 tracking-tight">Patient Attachments</h2>
-              <p className="mt-1 text-sm text-muted">Upload and manage diagnostic scans, laboratory reports, or general files.</p>
+              <p className="mt-1 text-sm text-slate-500">Upload and manage diagnostic scans, laboratory reports, or general files.</p>
             </div>
             <FileUpload 
               patientId={patientId} 
               onUploadSuccess={async () => {
-                // Reload patient record to fetch updated files list
                 const data = await getPatient(patientId);
                 setPatient(data);
               }} 
             />
           </div>
           <div className="lg:col-span-2">
-            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Attached Documents ({patient.files?.length || 0})</h3>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Attached Documents ({patient.files?.length || 0})</h3>
             
             {!patient.files || patient.files.length === 0 ? (
-              <div className="h-44 flex items-center justify-center border border-slate-100 rounded-xl bg-slate-50/50 text-sm text-slate-400 italic">
+              <div className="h-44 flex items-center justify-center border border-slate-100 rounded-2xl bg-slate-50/50 text-sm text-slate-400 italic">
                 No attachments uploaded for this patient yet.
               </div>
             ) : (
-              <div className="divide-y divide-line border border-line rounded-xl overflow-hidden bg-white max-h-[320px] overflow-y-auto">
+              <div className="divide-y divide-line border border-slate-100 rounded-2xl overflow-hidden bg-white max-h-[320px] overflow-y-auto">
                 {patient.files.map((file) => (
                   <div key={file._id} className="flex items-center justify-between p-4 text-sm transition hover:bg-slate-50/50">
                     <div className="space-y-1.5 max-w-[70%]">
@@ -229,17 +357,83 @@ export default function Dashboard() {
           </div>
         </section>
 
+        {/* Doctor Review Card (Admin & Doctor roles only) */}
+        {(currentUser?.role === "admin" || currentUser?.role === "doctor") && (
+          <section className="rounded-2xl border border-slate-100 bg-white p-6 sm:p-8 shadow-sm">
+            <div className="mb-6 pb-4 border-b border-slate-100">
+              <h2 className="text-lg font-bold text-slate-800 tracking-tight">Doctor Remarks & Evaluation</h2>
+              <p className="mt-1 text-sm text-slate-500">Submit final fitness decisions and comments for this worker.</p>
+            </div>
+            
+            <form onSubmit={handleSaveReview} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Worker Fitness Status</label>
+                  <select
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-brand"
+                    value={reviewStatus}
+                    onChange={(e) => setReviewStatus(e.target.value)}
+                  >
+                    <option value="FIT">FIT</option>
+                    <option value="UNFIT">UNFIT</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Evaluation Date</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-800 outline-none focus:border-brand"
+                      value={reviewDate}
+                      onChange={(e) => setReviewDate(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setReviewDate(new Date().toISOString().split("T")[0])}
+                      className="px-3.5 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-bold transition"
+                    >
+                      Today
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Treatment / Recommendation Remarks</label>
+                <textarea
+                  rows="3"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none focus:border-brand"
+                  placeholder="Type Rx details, findings, or recommendations..."
+                  value={reviewRemarks}
+                  onChange={(e) => setReviewRemarks(e.target.value)}
+                ></textarea>
+              </div>
+              
+              <div className="flex justify-end pt-3">
+                <button
+                  type="submit"
+                  disabled={savingReview}
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-brand px-6 text-sm font-bold text-white hover:bg-blue-700 shadow-sm transition disabled:opacity-50"
+                >
+                  {savingReview ? "Saving Remarks..." : "Save Remarks & Review"}
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
+
         {/* Recent Activity Section */}
-        <section className="rounded-xl border border-line bg-white p-6 shadow-soft">
+        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-base font-bold text-slate-800 tracking-tight">Recent Activity</h2>
             <span className="text-xs font-semibold uppercase tracking-wider text-brand">History</span>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {activities.map(([label, date]) => (
-              <div key={`${label}-${date}`} className="rounded-lg border border-line bg-slate-50/50 p-4 transition hover:bg-slate-50">
+              <div key={`${label}-${date}`} className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition hover:bg-slate-50">
                 <p className="text-sm font-semibold text-slate-800">{label}</p>
-                <p className="mt-1.5 text-xs text-muted">{formatDateTime(date)}</p>
+                <p className="mt-1.5 text-xs text-slate-400 font-medium">{formatDateTime(date)}</p>
               </div>
             ))}
           </div>

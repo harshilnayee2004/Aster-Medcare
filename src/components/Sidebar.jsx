@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import api from "../services/api";
 
 const baseNavItems = [
   { 
@@ -47,11 +49,26 @@ const baseNavItems = [
 export default function Sidebar({ patientId }) {
   const location = useLocation();
   const { currentUser, logout } = useAuth();
+  const [patientName, setPatientName] = useState("");
 
   const userRole = currentUser?.role || "employee";
 
+  useEffect(() => {
+    async function loadPatientName() {
+      if (patientId && patientId !== "new") {
+        try {
+          const res = await api.get(`/patients/${patientId}`);
+          setPatientName(res.data?.name || "");
+        } catch (err) {
+          console.error("Failed to load patient name in sidebar:", err);
+        }
+      }
+    }
+    loadPatientName();
+  }, [patientId]);
+
   const navItems = [
-    patientId && {
+    patientId && patientId !== "new" && {
       label: "Patient Dashboard",
       path: `/patients/${patientId}`,
       roles: ["admin", "doctor", "employee"],
@@ -67,17 +84,42 @@ export default function Sidebar({ patientId }) {
   const visibleItems = navItems.filter((item) => item.roles.includes(userRole));
 
   return (
-    <aside className="fixed left-0 top-0 z-10 flex h-screen w-64 flex-col border-r border-line bg-white px-6 py-8">
-      <Link to="/patients" className="mb-16 flex items-center gap-3 text-lg font-bold text-ink">
-        <span className="grid h-9 w-9 place-items-center rounded-full border border-brand text-brand shadow-sm">
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <aside className="fixed left-0 top-0 z-30 flex h-screen w-64 flex-col border-r border-line bg-white px-5 py-6">
+      {/* Brand Header */}
+      <Link to="/patients" className="mb-10 flex items-center gap-3 text-lg font-bold text-slate-800">
+        <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand text-white shadow-soft">
+          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
         </span>
-        Aster Medcare
+        <div className="flex flex-col leading-tight">
+          <span className="tracking-tight font-extrabold text-[#0f172a]">Aster Medcare</span>
+          <span className="text-xxs font-semibold text-slate-400 uppercase tracking-widest">Workspace</span>
+        </div>
       </Link>
 
-      <nav className="space-y-2">
+      {/* Current Patient Context Divider */}
+      {patientId && patientId !== "new" && (
+        <div className="mb-6 rounded-xl border border-slate-100 bg-slate-50/50 p-3.5 animate-fade-in">
+          <span className="text-xxs font-bold uppercase tracking-wider text-slate-400 block mb-1">Current Patient</span>
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <span className="text-sm font-bold text-slate-800 truncate" title={patientName}>
+              {patientName || "Loading..."}
+            </span>
+            <Link 
+              to="/patients" 
+              className="text-xs font-semibold text-brand hover:text-blue-700 transition flex items-center gap-0.5 shrink-0"
+              title="Back to Patient Records"
+            >
+              <span>←</span>
+              <span>Back</span>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Navigation Items */}
+      <nav className="space-y-1.5 flex-1 overflow-y-auto">
         {visibleItems.map((item) => {
           const isActive = location.pathname === item.path || 
             (item.label === "Patient Dashboard" && location.pathname.startsWith(`/patients/${patientId}`));
@@ -86,8 +128,10 @@ export default function Sidebar({ patientId }) {
             <Link
               key={item.label}
               to={item.path}
-              className={`flex items-center gap-4 rounded-lg px-4 py-3 text-sm font-semibold transition ${
-                isActive ? "bg-[#f1f6ff] text-brand" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              className={`flex items-center gap-3.5 rounded-lg px-4 py-3 text-sm font-semibold transition border-l-4 ${
+                isActive 
+                  ? "bg-blue-50/30 text-brand border-brand shadow-xxs font-bold" 
+                  : "text-slate-600 border-transparent hover:bg-slate-50/60 hover:text-slate-900"
               }`}
             >
               <span className={`flex-shrink-0 ${isActive ? "text-brand" : "text-slate-400"}`}>
@@ -99,17 +143,30 @@ export default function Sidebar({ patientId }) {
         })}
       </nav>
 
-      <button 
-        onClick={logout} 
-        className="mt-auto flex items-center gap-4 rounded-lg px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-red-50 hover:text-red-600 transition text-left w-full"
-      >
-        <span className="flex-shrink-0 text-slate-400">
-          <svg className="h-5 w-5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-        </span>
-        Logout
-      </button>
+      {/* User Details & Logout footer */}
+      <div className="mt-auto border-t border-line pt-5 space-y-4">
+        <div className="flex items-center gap-3 px-3">
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-sm font-bold text-slate-700 border border-slate-200">
+            {currentUser?.name ? currentUser.name[0].toUpperCase() : "U"}
+          </div>
+          <div className="flex flex-col min-w-0 leading-tight">
+            <span className="text-sm font-bold text-slate-800 truncate" title={currentUser?.name}>{currentUser?.name}</span>
+            <span className="text-xxs text-slate-400 truncate" title={currentUser?.email}>{currentUser?.email}</span>
+          </div>
+        </div>
+        
+        <button 
+          onClick={logout} 
+          className="flex items-center gap-3.5 rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-red-50 hover:text-red-600 transition text-left w-full"
+        >
+          <span className="flex-shrink-0 text-slate-400 group-hover:text-red-600">
+            <svg className="h-5 w-5 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </span>
+          Logout
+        </button>
+      </div>
     </aside>
   );
 }

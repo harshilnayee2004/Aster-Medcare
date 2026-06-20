@@ -35,6 +35,7 @@ export default function PatientSelection() {
   const [companyFilter, setCompanyFilter] = useState("All");
   const [genderFilter, setGenderFilter] = useState("All");
   const [fitFilter, setFitFilter] = useState("All");
+  const [dateFilter, setDateFilter] = useState("All");
 
   // Bulk Download Modal States
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
@@ -80,15 +81,36 @@ export default function PatientSelection() {
 
     let matchesFit = true;
     if (fitFilter !== "All") {
-      const status = patient.forms?.postMedical?.data?.fitStatus;
+      const status = patient.forms?.postMedical?.data?.fitStatus || "";
       if (fitFilter === "Fit") {
-        matchesFit = status === "Fit";
+        matchesFit = status.toUpperCase() === "FIT";
       } else if (fitFilter === "Unfit") {
-        matchesFit = status === "Unfit";
+        matchesFit = status.toUpperCase() === "UNFIT";
       }
     }
 
-    return matchesSearch && matchesCompany && matchesGender && matchesFit;
+    const matchesDate = (() => {
+      if (dateFilter === "All") return true;
+      if (!patient.createdAt) return false;
+      const regDate = new Date(patient.createdAt);
+      const now = new Date();
+      if (dateFilter === "Today") {
+        return regDate.toDateString() === now.toDateString();
+      }
+      if (dateFilter === "This Week") {
+        const diffTime = Math.abs(now - regDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= 7;
+      }
+      if (dateFilter === "This Month") {
+        const diffTime = Math.abs(now - regDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= 30;
+      }
+      return true;
+    })();
+
+    return matchesSearch && matchesCompany && matchesGender && matchesFit && matchesDate;
   });
 
   // ZIP generation pipeline
@@ -216,114 +238,121 @@ export default function PatientSelection() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-6xl space-y-8">
-        {/* Header Options */}
-        <section className="rounded-xl border border-line bg-white p-6 sm:p-8 shadow-soft">
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Patient Selection</h1>
-          <p className="mt-1 text-sm text-slate-500">Register a new patient or continue managing diagnostics for an existing worker.</p>
-          
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <Link 
-              to="/patients/new" 
-              className="group flex flex-col justify-center rounded-xl border border-line bg-white p-6 transition duration-200 hover:-translate-y-0.5 hover:border-brand hover:shadow-soft"
+      <div className="mx-auto max-w-6xl space-y-6">
+        {/* Header Block */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-[#0f172a] tracking-tight">Patient Records</h1>
+            <p className="text-sm text-slate-500 mt-1">Search and manage all registered patients</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/import"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50 shadow-sm transition"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shadow-sm mb-4">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-              </div>
-              <span className="text-lg font-bold text-slate-800 tracking-tight">New Patient Registration</span>
-              <span className="mt-1 text-sm text-slate-400">Add details and generate a unique Patient ID</span>
+              <svg className="h-4.5 w-4.5 mr-2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Bulk Import
             </Link>
-            
-            <a 
-              href="#existing" 
-              className="group flex flex-col justify-center rounded-xl border border-line bg-white p-6 transition duration-200 hover:-translate-y-0.5 hover:border-brand hover:shadow-soft"
+            <Link
+              to="/patients/new"
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-brand px-5 text-sm font-semibold text-white hover:bg-blue-700 shadow-sm transition"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-sm mb-4">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <svg className="h-4.5 w-4.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Register New Patient
+            </Link>
+          </div>
+        </div>
+
+        {/* Search & Filters */}
+        <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm space-y-5">
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <input
+                type="text"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 pl-11 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand focus:bg-white focus:ring-4 focus:ring-blue-50"
+                placeholder="Search patient name, ID, or company..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </div>
-              <span className="text-lg font-bold text-slate-800 tracking-tight">Existing Patient Search</span>
-              <span className="mt-1 text-sm text-slate-400">Search and open profiles of saved patients</span>
-            </a>
-          </div>
-        </section>
-
-        {/* Directory Listing */}
-        {loading ? (
-          <div className="text-center py-12 text-slate-500 font-medium animate-pulse">Loading patients...</div>
-        ) : error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-600 font-semibold text-center">{error}</div>
-        ) : (
-          <section id="existing" className="rounded-xl border border-line bg-white p-6 sm:p-8 shadow-soft scroll-mt-6">
-            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-slate-800 tracking-tight">Existing Patients</h2>
-                <p className="mt-1 text-sm text-slate-500">Registered records saved in database.</p>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-                <button
-                  onClick={() => setIsDownloadModalOpen(true)}
-                  className="w-full sm:w-auto px-4 py-2 border border-slate-200 text-slate-700 bg-white rounded-lg text-xs font-bold hover:bg-slate-50 hover:text-brand transition flex items-center justify-center gap-1.5 shadow-sm"
-                >
-                  <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  <span>Download All Reports</span>
-                </button>
-                
-                <div className="relative w-full sm:max-w-xs">
-                  <input 
-                    className="input pr-10" 
-                    placeholder="Search patient name, ID..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)} 
-                  />
-                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </span>
-                </div>
-              </div>
+              </span>
             </div>
 
-            {/* Sub-Filters row */}
-            <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-slate-100 pb-6">
-              <div>
-                <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Filter by Company</label>
-                <select 
-                  className="input !py-1.5 !px-3 text-xs" 
-                  value={companyFilter} 
+            {/* Bulk Download Button */}
+            <button
+              onClick={() => setIsDownloadModalOpen(true)}
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50 shadow-sm transition"
+            >
+              <svg className="h-4.5 w-4.5 mr-2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Bulk PDF Export
+            </button>
+          </div>
+
+          {/* Chips & Filter Options */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-4 border-t border-slate-100">
+            {/* Date Filter Chips */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Reg Date:</span>
+              {["All", "Today", "This Week", "This Month"].map((chip) => (
+                <button
+                  key={chip}
+                  onClick={() => setDateFilter(chip)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition shrink-0 ${
+                    dateFilter === chip
+                      ? "bg-brand text-white shadow-xxs font-bold"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+
+            {/* Select dropdowns */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Company:</span>
+                <select
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none focus:border-brand"
+                  value={companyFilter}
                   onChange={(e) => setCompanyFilter(e.target.value)}
                 >
                   <option value="All">All Companies</option>
-                  {uniqueCompanies.map(c => (
+                  {uniqueCompanies.map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Filter by Gender</label>
-                <select 
-                  className="input !py-1.5 !px-3 text-xs" 
-                  value={genderFilter} 
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Gender:</span>
+                <select
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none focus:border-brand"
+                  value={genderFilter}
                   onChange={(e) => setGenderFilter(e.target.value)}
                 >
-                  <option value="All">All Genders</option>
+                  <option value="All">All</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
-              <div>
-                <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Filter by Fit Status</label>
-                <select 
-                  className="input !py-1.5 !px-3 text-xs" 
-                  value={fitFilter} 
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Status:</span>
+                <select
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none focus:border-brand"
+                  value={fitFilter}
                   onChange={(e) => setFitFilter(e.target.value)}
                 >
                   <option value="All">All Statuses</option>
@@ -332,46 +361,110 @@ export default function PatientSelection() {
                 </select>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Patients Table */}
-            <div className="overflow-hidden rounded-xl border border-line">
-              {filteredPatients.length === 0 ? (
-                <div className="p-12 text-center text-sm text-slate-400 italic">No patients match the active search filters.</div>
-              ) : (
-                <div className="min-w-full divide-y divide-line">
-                  <div className="bg-slate-50/70 hidden sm:grid sm:grid-cols-[1.3fr_1fr_1.2fr_auto] items-center px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    <span>Patient Name</span>
-                    <span>Patient ID</span>
-                    <span>Company / Factory</span>
-                    <span className="text-right pr-4">Action</span>
-                  </div>
-                  
-                  <div className="divide-y divide-line bg-white">
-                    {filteredPatients.map((patient) => (
-                      <Link
-                        key={patient.patientId}
-                        to={`/patients/${patient.patientId}`}
-                        className="grid grid-cols-1 sm:grid-cols-[1.3fr_1fr_1.2fr_auto] items-center px-6 py-4.5 text-sm transition hover:bg-slate-50/50"
-                      >
-                        <div className="flex flex-col gap-0.5 sm:block">
-                          <span className="font-semibold text-slate-800">{patient.name}</span>
-                          <span className="text-xs text-slate-400 sm:hidden mt-0.5">{patient.patientId}</span>
+        {/* Directory Listings */}
+        {loading ? (
+          <div className="text-center py-12 text-slate-500 font-medium animate-pulse">Loading patients...</div>
+        ) : error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-600 font-semibold text-center">{error}</div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-sm text-slate-500 px-1">
+              <span>Showing <strong>{filteredPatients.length}</strong> {filteredPatients.length === 1 ? "patient" : "patients"}</span>
+            </div>
+
+            {filteredPatients.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-16 text-center">
+                <svg className="mx-auto h-12 w-12 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <h3 className="mt-4 text-base font-bold text-slate-800">No patients found</h3>
+                <p className="mt-1 text-sm text-slate-400 max-w-xs mx-auto">We couldn't find any patient matching your selected filters. Try broadening your query or clear filters.</p>
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setCompanyFilter("All");
+                    setGenderFilter("All");
+                    setFitFilter("All");
+                    setDateFilter("All");
+                  }}
+                  className="mt-5 inline-flex items-center justify-center rounded-xl bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 transition"
+                >
+                  Reset All Filters
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredPatients.map((patient) => {
+                  const fitStatus = patient.forms?.postMedical?.data?.fitStatus || "Pending";
+                  let badgeColor = "bg-yellow-50 text-yellow-700 border-yellow-100";
+                  if (fitStatus.toUpperCase() === "FIT") badgeColor = "bg-green-50 text-green-700 border-green-100";
+                  if (fitStatus.toUpperCase() === "UNFIT") badgeColor = "bg-red-50 text-red-700 border-red-100";
+
+                  const regDateStr = patient.createdAt
+                    ? new Date(patient.createdAt).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                      })
+                    : "N/A";
+
+                  return (
+                    <Link
+                      key={patient.patientId}
+                      to={`/patients/${patient.patientId}`}
+                      className="group flex flex-col justify-between rounded-2xl border border-slate-100 bg-white p-5 shadow-sm hover:shadow-md hover:border-slate-200 transition duration-200"
+                    >
+                      <div className="space-y-4">
+                        {/* ID and Status */}
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-xs font-bold text-brand bg-blue-50/50 px-2.5 py-1 rounded-lg border border-blue-100/50">
+                            {patient.patientId}
+                          </span>
+                          <span className={`text-xxs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border ${badgeColor}`}>
+                            {fitStatus}
+                          </span>
                         </div>
-                        <span className="hidden sm:inline font-mono font-medium text-brand">{patient.patientId}</span>
-                        <span className="text-slate-500 mt-1 sm:mt-0 text-xs sm:text-sm">{patient.company || "Aster Medcare"}</span>
-                        <span className="mt-3 sm:mt-0 text-xs sm:text-sm font-semibold text-brand text-right pr-4 transition flex items-center justify-end gap-1">
-                          Open Dashboard 
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+
+                        {/* Name and Company */}
+                        <div>
+                          <h3 className="text-base font-bold text-slate-800 group-hover:text-brand transition truncate">
+                            {patient.name}
+                          </h3>
+                          <p className="text-xs text-slate-400 mt-0.5 truncate">{patient.company || "Aster Medcare"}</p>
+                        </div>
+
+                        {/* Age and Gender */}
+                        <div className="grid grid-cols-2 gap-y-2 pt-3 border-t border-slate-50 text-xxs font-semibold text-slate-505">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-400">Age:</span>
+                            <span className="text-slate-700 font-bold">{patient.age} yrs</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-400">Gender:</span>
+                            <span className="text-slate-700 font-bold">{patient.gender}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Footer */}
+                      <div className="mt-5 pt-3 border-t border-slate-50 flex items-center justify-between">
+                        <span className="text-xxs text-slate-400 font-medium">Registered: {regDateStr}</span>
+                        <span className="text-xs font-bold text-brand group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                          Open Profile
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                           </svg>
                         </span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         )}
       </div>
 

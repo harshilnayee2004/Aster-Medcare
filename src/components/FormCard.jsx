@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
+import { formatDateTime } from "../utils/localStorage.js";
 
-export default function FormCard({ title, status, icon, to, disabled }) {
+export default function FormCard({ title, status, icon, to, disabled, savedAt }) {
   const completed = status === "Completed";
 
   const renderIconBadge = (iconStr) => {
@@ -60,37 +61,73 @@ export default function FormCard({ title, status, icon, to, disabled }) {
 
   if (disabled) {
     return (
-      <div
-        className="flex h-48 flex-col rounded-xl border border-slate-100 bg-slate-50/50 p-6 opacity-60 cursor-not-allowed select-none"
-      >
-        <div className="mb-6 flex items-center justify-between">
+      <div className="flex flex-col justify-between rounded-2xl border border-slate-100 bg-slate-50/50 p-5 opacity-60 cursor-not-allowed select-none">
+        <div className="flex items-center justify-between">
           {renderIconBadge(icon)}
-          <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
+          <span className="text-slate-400">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </span>
         </div>
-        <span className="text-base font-bold text-slate-400 tracking-tight">{title}</span>
-        <span className="mt-auto text-xxs font-bold uppercase tracking-wider text-slate-400/80">
-          Locked
-        </span>
+        <div className="mt-4">
+          <span className="text-base font-bold text-slate-400 tracking-tight">{title}</span>
+          <p className="text-xxs font-bold text-slate-400 uppercase tracking-widest mt-1">Locked (Access Required)</p>
+        </div>
+        <div className="mt-5 border-t border-slate-100 pt-3">
+          <span className="text-xxs font-extrabold text-slate-400 block">- Locked</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <Link
-      to={to}
-      className="group flex h-48 flex-col rounded-xl border border-line bg-white p-6 transition duration-200 hover:-translate-y-0.5 hover:border-brand hover:shadow-soft"
-    >
-      <div className="mb-6">{renderIconBadge(icon)}</div>
-      <span className="text-base font-bold text-slate-800 tracking-tight">{title}</span>
-      <span className={`mt-auto flex items-center justify-between text-xs font-semibold uppercase tracking-wider ${completed ? "text-emerald-600" : "text-amber-600"}`}>
-        <span className="flex items-center gap-1.5">
-          <span className={`h-2.5 w-2.5 rounded-full ${completed ? "bg-emerald-500" : "bg-amber-500"}`}></span>
-          {status}
+    <div className="group flex flex-col justify-between rounded-2xl border border-slate-100 bg-white p-5 shadow-sm hover:shadow-md hover:border-slate-200 transition duration-200">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          {renderIconBadge(icon)}
+          {completed ? (
+            <span className="inline-flex items-center gap-1 text-xxs font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              Completed
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-xxs font-extrabold uppercase tracking-wider text-slate-400 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-200/60">
+              <span className="h-1.5 w-1.5 rounded-full bg-slate-300"></span>
+              Pending
+            </span>
+          )}
+        </div>
+
+        <div>
+          <h3 className="text-base font-bold text-slate-800 tracking-tight truncate">{title}</h3>
+          {savedAt ? (
+            <p className="text-xxs text-slate-400 mt-1 font-medium">Last Saved: {formatDateTime(savedAt)}</p>
+          ) : (
+            <p className="text-xxs text-slate-400 mt-1 italic font-medium">Not started yet</p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-5 pt-3 border-t border-slate-50 flex items-center justify-between">
+        <Link
+          to={to}
+          className={`inline-flex items-center justify-center px-4 py-2 text-xs font-bold rounded-lg border transition ${
+            completed
+              ? "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+              : "bg-brand text-white border-brand hover:bg-blue-700"
+          }`}
+        >
+          {completed ? "Edit Form" : "Fill Form"}
+        </Link>
+        <span className="text-slate-300 group-hover:text-brand group-hover:translate-x-0.5 transition duration-200">
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
         </span>
-        <span className="text-lg text-slate-400 transition group-hover:translate-x-1 group-hover:text-brand">→</span>
-      </span>
-    </Link>
+      </div>
+    </div>
   );
 }

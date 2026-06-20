@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams, Link } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import { getPatient, updatePatientForm } from "../utils/localStorage.js";
 import api from "../services/api";
@@ -129,34 +129,50 @@ export default function PostMedicalForm() {
 
   return (
     <AppShell patientId={patientId}>
-      <form onSubmit={handleSubmit} className="mx-auto max-w-6xl rounded-xl border border-line bg-white p-6 sm:p-8 shadow-soft">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Post Medical Evaluation Form</h1>
-            <p className="mt-1 text-sm text-slate-500">Log reviews and observations across medical test sections for {patient.name}.</p>
+      <form onSubmit={handleSubmit} className="mx-auto max-w-6xl space-y-6">
+        {/* Breadcrumb link */}
+        <Link to={`/patients/${patientId}`} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-brand transition mb-1">
+          <span>←</span>
+          <span>Back to Patient Dashboard</span>
+        </Link>
+
+        {/* Sticky Header */}
+        <div className="sticky top-24 z-10 bg-white/95 backdrop-blur-md p-4 border border-slate-100 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col">
+              <span className="text-xxs font-extrabold uppercase tracking-widest text-slate-400">Post Medical Evaluation</span>
+              <span className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                {patient.name} <span className="font-mono text-xs font-semibold text-brand bg-blue-50/50 px-2 py-0.5 rounded border border-blue-100/50">{patient.patientId}</span>
+              </span>
+            </div>
           </div>
-          <div className="flex gap-3 items-center">
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-              saveStatus === "Saved ✓" ? "bg-green-50 text-green-700 border border-green-200" :
-              saveStatus === "Saving..." ? "bg-amber-50 text-amber-700 border border-amber-200 animate-pulse" :
-              "bg-red-50 text-red-700 border border-red-200"
+          <div className="flex items-center gap-3 self-end sm:self-auto">
+            <span className={`text-xxs font-bold px-2.5 py-1 rounded-full ${
+              saveStatus === "Saved ✓" ? "bg-green-50 text-green-700 border border-green-200/50" :
+              saveStatus === "Saving..." ? "bg-amber-50 text-amber-700 border border-amber-200/50 animate-pulse" :
+              "bg-red-50 text-red-700 border border-red-200/50"
             }`}>
               {saveStatus}
             </span>
-            <button type="button" onClick={preview} className="button-secondary">Preview Report</button>
-            <button type="submit" className="button-primary">Save Form</button>
+            <button type="button" onClick={preview} className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-sm">Preview Report</button>
+            <button type="submit" className="inline-flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-xs font-bold text-white hover:bg-blue-700 transition shadow-sm">Save Form</button>
           </div>
         </div>
 
-        <div className="space-y-8">
-          <section className="border border-line rounded-xl bg-slate-50/20 p-6">
-            <h2 className="mb-5 text-base font-bold text-slate-800 tracking-tight border-b border-line pb-2">1. Doctor Observations Checklist (Normal/Abnormal)</h2>
+        {/* Form Body Cards */}
+        <div className="space-y-6">
+          {/* Card 1: Checklist */}
+          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm space-y-6">
+            <div className="pb-3 border-b border-slate-100">
+              <h2 className="text-base font-bold text-slate-800 tracking-tight">1. Doctor Observations Checklist (Normal/Abnormal)</h2>
+              <p className="text-xxs text-slate-400 mt-0.5">Toggle observation values for applicable test categories.</p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {tests.map(([key, label]) => (
-                <div key={key} className="rounded-xl border border-line bg-white p-4.5 shadow-sm hover:shadow-md transition">
-                  <label className="field-label font-semibold text-slate-700 mb-2.5">{label}</label>
+                <div key={key} className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition hover:bg-slate-50/80">
+                  <label className="field-label font-bold text-slate-600 mb-2">{label}</label>
                   <select 
-                    className="input" 
+                    className="input !py-2 text-xs font-semibold text-slate-700" 
                     value={form[key]} 
                     onChange={(event) => updateField(key, event.target.value)}
                   >
@@ -166,15 +182,19 @@ export default function PostMedicalForm() {
                 </div>
               ))}
             </div>
-          </section>
+          </div>
 
-          <section className="border border-line rounded-xl bg-slate-50/20 p-6">
-            <h2 className="mb-5 text-base font-bold text-slate-800 tracking-tight border-b border-line pb-2">2. Treatment & Fitness Certification</h2>
+          {/* Card 2: Details & Fit */}
+          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm space-y-6">
+            <div className="pb-3 border-b border-slate-100">
+              <h2 className="text-base font-bold text-slate-800 tracking-tight">2. Treatment & Fitness Certification</h2>
+              <p className="text-xxs text-slate-400 mt-0.5">Final recommendations, fit status, and signing date.</p>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
-                <label className="field-label font-semibold text-slate-700">Treatment Recommendation / Additional Advise</label>
+                <label className="field-label font-bold text-slate-600 mb-2">Treatment Recommendation / Additional Advise</label>
                 <textarea 
-                  className="input min-h-[188px]" 
+                  className="input min-h-[188px] text-xs font-medium text-slate-700" 
                   value={form.treatmentRecommendation} 
                   onChange={(event) => updateField("treatmentRecommendation", event.target.value)} 
                   placeholder="Enter medical treatment recommendations or custom notes..."
@@ -182,9 +202,9 @@ export default function PostMedicalForm() {
               </div>
               <div className="space-y-5">
                 <div>
-                  <label className="field-label font-semibold text-slate-700">Fit Status</label>
+                  <label className="field-label font-bold text-slate-600 mb-2">Fit Status <span className="text-red-500">*</span></label>
                   <select 
-                    className="input" 
+                    className="input !py-2.5 text-xs font-bold text-slate-700" 
                     value={form.fitStatus} 
                     onChange={(event) => updateField("fitStatus", event.target.value)}
                   >
@@ -193,12 +213,12 @@ export default function PostMedicalForm() {
                   </select>
                 </div>
                 <div>
-                  <label className="field-label font-semibold text-slate-700">Employment Fit Till</label>
+                  <label className="field-label font-bold text-slate-600 mb-2">Employment Fit Till</label>
                   <input 
-                    className="input" 
+                    className="input text-xs font-medium text-slate-700" 
                     value={form.employmentTill} 
                     onChange={(event) => updateField("employmentTill", event.target.value)} 
-                    placeholder="Upcoming annual / biannual date description" 
+                    placeholder="e.g. Next Annual Health Checkup" 
                   />
                 </div>
                 <DateField 
@@ -209,7 +229,7 @@ export default function PostMedicalForm() {
                 />
               </div>
             </div>
-          </section>
+          </div>
         </div>
       </form>
     </AppShell>

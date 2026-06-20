@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams, Link } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import { getPatient, updatePatientForm } from "../utils/localStorage.js";
 import api from "../services/api";
@@ -128,37 +128,48 @@ export default function Form33Form() {
 
   return (
     <AppShell patientId={patientId}>
-      <form onSubmit={submit} className="mx-auto max-w-6xl rounded-xl border border-line bg-white p-6 sm:p-8 shadow-soft">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-line pb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Form No. 33</h1>
-            <p className="mt-1 text-sm text-slate-500">Certificate of Fitness of employment in hazardous process and operations for {patient.name}.</p>
+      <form onSubmit={submit} className="mx-auto max-w-6xl space-y-6">
+        {/* Breadcrumb link */}
+        <Link to={`/patients/${patientId}`} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-brand transition mb-1">
+          <span>←</span>
+          <span>Back to Patient Dashboard</span>
+        </Link>
+
+        {/* Sticky Header */}
+        <div className="sticky top-24 z-10 bg-white/95 backdrop-blur-md p-4 border border-slate-100 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col">
+              <span className="text-xxs font-extrabold uppercase tracking-widest text-slate-400">Form No. 33</span>
+              <span className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                {patient.name} <span className="font-mono text-xs font-semibold text-brand bg-blue-50/50 px-2 py-0.5 rounded border border-blue-100/50">{patient.patientId}</span>
+              </span>
+            </div>
           </div>
-          <div className="flex gap-3 items-center">
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-              saveStatus === "Saved ✓" ? "bg-green-50 text-green-700 border border-green-200" :
-              saveStatus === "Saving..." ? "bg-amber-50 text-amber-700 border border-amber-200 animate-pulse" :
-              "bg-red-50 text-red-700 border border-red-200"
+          <div className="flex items-center gap-3 self-end sm:self-auto">
+            <span className={`text-xxs font-bold px-2.5 py-1 rounded-full ${
+              saveStatus === "Saved ✓" ? "bg-green-50 text-green-700 border border-green-200/50" :
+              saveStatus === "Saving..." ? "bg-amber-50 text-amber-700 border border-amber-200/50 animate-pulse" :
+              "bg-red-50 text-red-700 border border-red-200/50"
             }`}>
               {saveStatus}
             </span>
-            <button type="button" onClick={preview} className="button-secondary">Preview Report</button>
-            <button type="submit" className="button-primary">Save Form</button>
+            <button type="button" onClick={preview} className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-sm">Preview Report</button>
+            <button type="submit" className="inline-flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-xs font-bold text-white hover:bg-blue-700 transition shadow-sm">Save Form</button>
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6">
           <Section title="1. Worker Details">
             <Field label="Serial Number" field="serialNumber" value={form.serialNumber} onChange={updateField} />
-            <Field label="Name of Person Examined" field="name" value={form.name} onChange={updateField} />
+            <Field label="Name of Person Examined" field="name" value={form.name} onChange={updateField} required />
             <Field label="Father's / Husband Name" field="fatherHusbandName" value={form.fatherHusbandName} onChange={updateField} />
-            <Field label="Sex" field="sex" value={form.sex} onChange={updateField} />
+            <Field label="Sex" field="sex" value={form.sex} onChange={updateField} required />
             <Field label="Residence Address" field="residence" value={form.residence} onChange={updateField} />
             <Field label="Pin Code" field="pinCode" value={form.pinCode} onChange={updateField} />
             <Field label="City" field="city" value={form.city} onChange={updateField} />
             <Field label="State" field="state" value={form.state} onChange={updateField} />
             <DateField label="Date of Birth" type="date" value={form.dateOfBirth} onChange={(val) => updateField("dateOfBirth", val)} />
-            <Field label="Examined Age (Years)" field="examinedAge" value={form.examinedAge} onChange={updateField} />
+            <Field label="Examined Age (Years)" field="examinedAge" value={form.examinedAge} onChange={updateField} required />
           </Section>
 
           <Section title="2. Factory & Employment Details">
@@ -173,13 +184,13 @@ export default function Form33Form() {
           </Section>
 
           <Section title="3. Fitness Evaluation & Signature">
-            <Choice label="Fit Status" field="fitStatus" value={form.fitStatus} onChange={updateField} options={["FIT", "UNFIT"]} />
+            <Choice label="Fit Status" field="fitStatus" value={form.fitStatus} onChange={updateField} options={["FIT", "UNFIT"]} required />
             <Field label="Unfit Reason" field="unfitReason" value={form.unfitReason} onChange={updateField} />
             <Field label="Previous Certificate Serial No." field="previousCertificate" value={form.previousCertificate} onChange={updateField} />
             <DateField label="Date of Examination" type="date" value={form.examinationDate} onChange={(val) => updateField("examinationDate", val)} />
             <Field label="Extension / Unfit Note" field="extensionNote" value={form.extensionNote} onChange={updateField} />
             <Field label="Observed Signs & Symptoms" field="symptoms" value={form.symptoms} onChange={updateField} />
-            <div className="col-span-1 sm:col-span-2">
+            <div className="col-span-1 md:col-span-2">
               <DateField label="Doctor Signature Date & Time" type="datetime-local" value={form.doctorSignatureDate} onChange={(val) => updateField("doctorSignatureDate", val)} />
             </div>
           </Section>
@@ -191,31 +202,35 @@ export default function Form33Form() {
 
 function Section({ title, children }) {
   return (
-    <section className="border border-line rounded-xl bg-slate-50/20 p-6">
-      <h2 className="mb-5 text-base font-bold text-slate-800 tracking-tight border-b border-line pb-2">{title}</h2>
+    <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm space-y-5">
+      <div className="pb-3 border-b border-slate-100">
+        <h2 className="text-base font-bold text-slate-800 tracking-tight">{title}</h2>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">{children}</div>
-    </section>
-  );
-}
-
-function Field({ label, field, value, onChange, type = "text" }) {
-  const id = `form33-${field}`;
-
-  return (
-    <div>
-      <label className="field-label" htmlFor={id}>{label}</label>
-      <input id={id} type={type} className="input" value={value} onChange={(event) => onChange(field, event.target.value)} />
     </div>
   );
 }
 
-function Choice({ label, field, value, onChange, options = ["Yes", "No"] }) {
+function Field({ label, field, value, onChange, type = "text", required }) {
   const id = `form33-${field}`;
-
   return (
     <div>
-      <label className="field-label" htmlFor={id}>{label}</label>
-      <select id={id} className="input" value={value} onChange={(event) => onChange(field, event.target.value)}>
+      <label className="field-label font-bold text-slate-600 mb-2" htmlFor={id}>
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <input id={id} type={type} className="input text-xs font-semibold text-slate-700" value={value || ""} onChange={(event) => onChange(field, event.target.value)} />
+    </div>
+  );
+}
+
+function Choice({ label, field, value, onChange, options = ["Yes", "No"], required }) {
+  const id = `form33-${field}`;
+  return (
+    <div>
+      <label className="field-label font-bold text-slate-600 mb-2" htmlFor={id}>
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <select id={id} className="input !py-2 text-xs font-semibold text-slate-700" value={value} onChange={(event) => onChange(field, event.target.value)}>
         {options.map((option) => <option key={option}>{option}</option>)}
       </select>
     </div>
