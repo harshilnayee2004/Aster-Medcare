@@ -392,7 +392,7 @@ export default function AdminPanel() {
                       </button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5 max-w-5xl">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl">
                     {builtForms.map((formObj) => {
                       const isChecked = selectedUserAccess.includes(formObj.key);
                       const isDoctorOrAdmin = users.find(u => u._id === selectedUserId)?.role !== "employee";
@@ -410,7 +410,7 @@ export default function AdminPanel() {
                         >
                           <input
                             type="checkbox"
-                            className="h-4.5 w-4.5 rounded border-slate-300 text-brand focus:ring-brand"
+                            className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
                             checked={isChecked || isDoctorOrAdmin}
                             disabled={isDoctorOrAdmin}
                             onChange={() => {}}
@@ -449,7 +449,7 @@ export default function AdminPanel() {
                       </button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5 max-w-5xl">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl">
                     {placeholderForms.map((formObj) => {
                       const isChecked = selectedUserAccess.includes(formObj.key);
                       const isDoctorOrAdmin = users.find(u => u._id === selectedUserId)?.role !== "employee";
@@ -467,7 +467,7 @@ export default function AdminPanel() {
                         >
                           <input
                             type="checkbox"
-                            className="h-4.5 w-4.5 rounded border-slate-300 text-brand focus:ring-brand"
+                            className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
                             checked={isChecked || isDoctorOrAdmin}
                             disabled={isDoctorOrAdmin}
                             onChange={() => {}}

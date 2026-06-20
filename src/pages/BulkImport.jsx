@@ -135,9 +135,9 @@ export default function BulkImport() {
           </div>
           <button
             onClick={handleDownloadTemplate}
-            className="px-4.5 py-2 border border-slate-200 text-slate-700 bg-white rounded-lg text-xs font-bold hover:bg-slate-50 hover:text-brand transition flex items-center gap-1.5 shadow-sm self-start sm:self-center"
+            className="px-4 py-2 border border-slate-200 text-slate-700 bg-white rounded-lg text-xs font-bold hover:bg-slate-50 hover:text-brand transition flex items-center gap-1.5 shadow-sm self-start sm:self-center"
           >
-            <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
             <span>Download Excel Template</span>
@@ -161,7 +161,7 @@ export default function BulkImport() {
           <h2 className="text-base font-bold text-slate-800 tracking-tight">Step 1 — Upload Worker Sheet</h2>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <label className="button-primary flex items-center justify-center gap-2 cursor-pointer min-w-[180px] text-center">
-              <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
               <span>Choose Excel File</span>

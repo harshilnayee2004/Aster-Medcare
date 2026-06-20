@@ -99,8 +99,8 @@ export default function Login() {
           
           <ul className="space-y-5">
             <li className="flex items-start gap-4">
-              <span className="grid h-7.5 w-7.5 place-items-center rounded-lg bg-brand text-white shrink-0 mt-0.5 shadow-sm">
-                <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-white shrink-0 mt-0.5 shadow-sm">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </span>
@@ -110,8 +110,8 @@ export default function Login() {
               </div>
             </li>
             <li className="flex items-start gap-4">
-              <span className="grid h-7.5 w-7.5 place-items-center rounded-lg bg-brand text-white shrink-0 mt-0.5 shadow-sm">
-                <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-white shrink-0 mt-0.5 shadow-sm">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                 </svg>
               </span>
@@ -121,8 +121,8 @@ export default function Login() {
               </div>
             </li>
             <li className="flex items-start gap-4">
-              <span className="grid h-7.5 w-7.5 place-items-center rounded-lg bg-brand text-white shrink-0 mt-0.5 shadow-sm">
-                <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-white shrink-0 mt-0.5 shadow-sm">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </span>
@@ -142,8 +142,8 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="w-full max-w-md bg-white rounded-2xl border border-line p-8 sm:p-10 shadow-soft animate-fade-in">
           <div className="mb-8">
             <span className="lg:hidden flex items-center gap-2 mb-6 text-brand font-bold text-lg">
-              <span className="grid h-8.5 w-8.5 place-items-center rounded-lg bg-brand text-white shadow-soft">
-                <svg className="h-5.5 w-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand text-white shadow-soft">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </span>
@@ -155,7 +155,7 @@ export default function Login() {
 
           {error && (
             <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-600 font-semibold flex items-start gap-2.5">
-              <svg className="h-4.5 w-4.5 shrink-0 mt-0.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <svg className="h-5 w-5 shrink-0 mt-0.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <span>{error}</span>
