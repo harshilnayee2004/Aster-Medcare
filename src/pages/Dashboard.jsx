@@ -145,22 +145,6 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-
-            {patient.mobile && (
-              <a
-                href={`https://wa.me/${patient.mobile.replace(/\D/g, "").length === 10 ? "91" + patient.mobile.replace(/\D/g, "") : patient.mobile.replace(/\D/g, "")}?text=${encodeURIComponent(
-                  `Hello ${patient.name},\n\nWelcome to Aster Medcare!\nYour Patient ID is: ${patient.patientId}\n\nThank you for choosing Aster Medcare.`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 text-sm font-semibold text-white transition hover:bg-[#1ebe57] shadow-sm whitespace-nowrap self-start md:self-auto"
-              >
-                <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24">
-                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.458L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.451 5.437 0 9.862-4.43 9.866-9.872.002-2.637-1.023-5.115-2.885-6.981-1.862-1.865-4.343-2.893-6.983-2.895-5.439 0-9.865 4.432-9.869 9.874-.001 1.562.415 3.09 1.202 4.448l-.992 3.622 3.702-.971zm11.367-7.25c-.27-.135-1.597-.788-1.846-.878-.249-.09-.43-.135-.61.135-.18.27-.697.878-.853 1.058-.156.18-.312.202-.582.067-.27-.135-1.14-.42-2.172-1.34-.803-.715-1.345-1.6-1.503-1.871-.158-.271-.017-.417.118-.552.122-.121.27-.315.405-.472.135-.158.18-.27.27-.45.09-.18.045-.338-.022-.473-.068-.135-.61-1.468-.836-2.012-.22-.53-.443-.459-.61-.468-.157-.008-.339-.01-.521-.01s-.48.067-.73.338c-.25.27-.954.933-.954 2.277s.977 2.64 1.112 2.822c.136.182 1.923 2.936 4.658 4.116.65.28 1.157.447 1.554.573.654.208 1.248.179 1.718.109.524-.078 1.598-.652 1.824-1.282.226-.63.226-1.17.158-1.283-.068-.112-.249-.202-.519-.337z" />
-                </svg>
-                Send WhatsApp Greeting
-              </a>
-            )}
           </div>
 
           {/* Demographics Chips */}

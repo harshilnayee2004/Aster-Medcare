@@ -1,10 +1,4 @@
 export default function PatientHeader({ patient }) {
-  const cleanMobile = patient.mobile ? patient.mobile.replace(/\D/g, "") : "";
-  const whatsappMobile = cleanMobile.length === 10 ? `91${cleanMobile}` : cleanMobile;
-  const whatsappUrl = `https://wa.me/${whatsappMobile}?text=${encodeURIComponent(
-    `Hello ${patient.name},\n\nWelcome to Estel Medicare!\nYour Patient ID is: ${patient.patientId}\n\nThank you for choosing Estel Medicare.`
-  )}`;
-
   return (
     <section className="rounded-xl border border-line bg-white p-6 shadow-soft transition hover:shadow-md">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -20,22 +14,7 @@ export default function PatientHeader({ patient }) {
               <span className="rounded bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-brand border border-blue-100">{patient.patientId}</span>
             </div>
           </div>
-        </div>
-
-        {/* Action Button Section */}
-        {patient.mobile && (
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-11 items-center justify-center gap-2.5 rounded-lg bg-[#25D366] px-5 text-sm font-semibold text-white transition hover:bg-[#1ebe57] active:scale-98 shadow-sm hover:shadow whitespace-nowrap self-start md:self-auto"
-          >
-            <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24">
-              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.458L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.451 5.437 0 9.862-4.43 9.866-9.872.002-2.637-1.023-5.115-2.885-6.981-1.862-1.865-4.343-2.893-6.983-2.895-5.439 0-9.865 4.432-9.869 9.874-.001 1.562.415 3.09 1.202 4.448l-.992 3.622 3.702-.971zm11.367-7.25c-.27-.135-1.597-.788-1.846-.878-.249-.09-.43-.135-.61.135-.18.27-.697.878-.853 1.058-.156.18-.312.202-.582.067-.27-.135-1.14-.42-2.172-1.34-.803-.715-1.345-1.6-1.503-1.871-.158-.271-.017-.417.118-.552.122-.121.27-.315.405-.472.135-.158.18-.27.27-.45.09-.18.045-.338-.022-.473-.068-.135-.61-1.468-.836-2.012-.22-.53-.443-.459-.61-.468-.157-.008-.339-.01-.521-.01s-.48.067-.73.338c-.25.27-.954.933-.954 2.277s.977 2.64 1.112 2.822c.136.182 1.923 2.936 4.658 4.116.65.28 1.157.447 1.554.573.654.208 1.248.179 1.718.109.524-.078 1.598-.652 1.824-1.282.226-.63.226-1.17.158-1.283-.068-.112-.249-.202-.519-.337z" />
-            </svg>
-            Send WhatsApp Greeting
-          </a>
-        )}
+        </div>        
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-4 border-t border-line pt-6 sm:grid-cols-3 lg:grid-cols-6">
