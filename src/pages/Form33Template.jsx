@@ -92,50 +92,109 @@ export default function Form33Template({ hideActions = false, patient: propPatie
         <FieldRow num="4." label="Sex" value={form.sex || patient.gender} />
         <FieldRow num="5." label="Residence with Pin code" value={form.residence || patient.address} />
 
-        <div className="form33-sub-row">
-          <span className="form33-ph form33-num"></span><span className="form33-ph form33-label"></span><span className="form33-ph form33-colon"></span>
-          <span className="form33-value"><span className="form33-filled form33-mid">{form.residence || patient.address}</span>&nbsp;&nbsp;&nbsp;Pin Code:-<span className="form33-filled form33-short">{form.pinCode}</span></span>
+        <div className="flex items-baseline mb-2 text-sm">
+          <span className="w-6 shrink-0"></span>
+          <span className="w-56 shrink-0"></span>
+          <span className="w-4 shrink-0"></span>
+          <div className="flex items-baseline gap-1.5 flex-grow">
+            <span className="border-b border-black flex-grow text-center min-w-[150px] pb-0.5">{form.residence || patient.address}</span>
+            <span className="shrink-0">Pin Code:-</span>
+            <span className="border-b border-black text-center min-w-[80px] pb-0.5">{form.pinCode}</span>
+          </div>
         </div>
-        <div className="form33-sub-row">
-          <span className="form33-ph form33-num"></span><span className="form33-ph form33-label"></span><span className="form33-ph form33-colon"></span>
-          <span className="form33-value">City:-<span className="form33-filled form33-city">{form.city}</span>&nbsp;&nbsp;&nbsp;State:-<span className="form33-filled form33-city">{form.state}</span></span>
+        <div className="flex items-baseline mb-2 text-sm">
+          <span className="w-6 shrink-0"></span>
+          <span className="w-56 shrink-0"></span>
+          <span className="w-4 shrink-0"></span>
+          <div className="flex items-baseline gap-1.5 flex-grow">
+            <span className="shrink-0">City:-</span>
+            <span className="border-b border-black flex-grow text-center min-w-[100px] pb-0.5">{form.city}</span>
+            <span className="shrink-0">State:-</span>
+            <span className="border-b border-black flex-grow text-center min-w-[100px] pb-0.5">{form.state}</span>
+          </div>
         </div>
 
         <FieldRow num="6." label="Date of birth, if available" value={displayDate(form.dateOfBirth)} />
         <FieldRow num="7." label="Name & address of the factory" value={[form.factoryName || patient.company, form.factoryAddress].filter(Boolean).join(", ")} />
 
-        <div className="form33-field-row">
-          <span className="form33-field-num">8.</span>
-          <span className="form33-field-label">The worker is employed/proposed in</span>
+        <div className="flex items-baseline mb-2 text-sm">
+          <span className="w-6 shrink-0 font-bold">8.</span>
+          <span className="shrink-0 font-bold">The worker is employed/proposed in</span>
         </div>
 
-        <div className="form33-sub8"><span className="form33-sub8-label">(a) Hazardous process</span><span className="form33-sub8-rest">:- {form.hazardousProcess || "No"}&nbsp;&nbsp;Area Name:-<span className="form33-filled form33-short">{form.hazardousArea}</span></span></div>
-        <div className="form33-sub8"><span className="form33-sub8-label">(b) Dangerous operation</span><span className="form33-sub8-rest">:- {form.dangerousOperation || "No"}&nbsp;&nbsp;Area Name:-<span className="form33-filled form33-short">{form.dangerousArea}</span></span></div>
-
-        <div className="form33-cert-block">
-          <p>I certify that I have personally examined the above named person whose identification marks are <span className="form33-filled form33-wide">{form.identificationMarks || patient.identificationMarks}</span> and who is desirous of being employed in <span className="form33-filled form33-wide">{form.employedIn}</span>.</p>
-          <p>Above mentioned process/operation and that his/her, age, as can be ascertained from my examination, is <span className="form33-filled form33-short">{form.examinedAge || patient.age}</span> years.</p>
-          <p>In my opinion he / she is {form.fitStatus === "UNFIT" ? "unfit" : "fit"} for employment in the Said manufacturing process/operation.</p>
+        <div className="flex items-baseline mb-2 text-sm ml-6">
+          <span className="w-52 shrink-0">(a) Hazardous process</span>
+          <div className="flex items-baseline gap-1.5 flex-grow">
+            <span className="shrink-0">:- {form.hazardousProcess || "No"}</span>
+            <span className="shrink-0 ml-4">Area Name:-</span>
+            <span className="border-b border-black flex-grow text-center min-w-[100px] pb-0.5">{form.hazardousArea}</span>
+          </div>
         </div>
-
-        <div className="form33-unfit-row">
-          <div className="form33-unfit-box">For<br />UNFIT</div>
-          <div className="form33-unfit-text">
-            <p>In my opinion he / she is unfit for employment in the said manufacturing process/operation for the reason <span className="form33-filled form33-wide">{form.unfitReason}</span> he/she is referred for further examination to the Certifying Surgeon.</p>
-            <p>The serial number of previous certificate is <span className="form33-filled form33-wide">{form.previousCertificate}</span> .</p>
+        <div className="flex items-baseline mb-2 text-sm ml-6">
+          <span className="w-52 shrink-0">(b) Dangerous operation</span>
+          <div className="flex items-baseline gap-1.5 flex-grow">
+            <span className="shrink-0">:- {form.dangerousOperation || "No"}</span>
+            <span className="shrink-0 ml-4">Area Name:-</span>
+            <span className="border-b border-black flex-grow text-center min-w-[100px] pb-0.5">{form.dangerousArea}</span>
           </div>
         </div>
 
-        <div className="form33-sign-section">
-          <div className="form33-sign-left">
-            <div className="form33-thumb-circle">X</div>
-            <div className="form33-sign-caption">Signature or left-hand thumb<br />impression of the person examined</div>
-            <div className="form33-factory-line">Name of the Factory : <span className="form33-filled form33-factory">{form.factoryName || patient.company}</span></div>
+        <div className="my-4 text-sm leading-relaxed text-left">
+          <p className="mb-2">
+            I certify that I have personally examined the above named person whose identification marks are{" "}
+            <span className="inline-block border-b border-black text-center min-w-[150px] px-2 pb-0.5">{form.identificationMarks || patient.identificationMarks}</span>{" "}
+            and who is desirous of being employed in{" "}
+            <span className="inline-block border-b border-black text-center min-w-[150px] px-2 pb-0.5">{form.employedIn}</span>.
+          </p>
+          <p className="mb-2">
+            Above mentioned process/operation and that his/her, age, as can be ascertained from my examination, is{" "}
+            <span className="inline-block border-b border-black text-center min-w-[60px] px-2 pb-0.5">{form.examinedAge || patient.age}</span> years.
+          </p>
+          <p className="mb-2">
+            In my opinion he / she is <span className="font-bold underline">{form.fitStatus === "UNFIT" ? "unfit" : "fit"}</span> for employment in the Said manufacturing process/operation.
+          </p>
+        </div>
+
+        <div className="flex items-stretch border border-black my-4 text-sm">
+          <div className="w-20 border-r border-black flex items-center justify-center text-center font-bold px-2 py-3">
+            For<br />UNFIT
           </div>
-          <div className="form33-sign-right">
-            <div>DATE:&nbsp;&nbsp;<span className="form33-filled form33-date-part">{docDay}</span>/<span className="form33-filled form33-date-part">{docMonth}</span>/20<span className="form33-filled form33-date-part">{docYear}</span>&nbsp;&nbsp;<span className="form33-filled form33-date-part">{docHour}</span>:<span className="form33-filled form33-date-part">{docMinute}</span> <span className="form33-filled form33-date-part">{docAmpm}</span></div>
-            <div style={{ marginTop: 24 }}>Signature of the Factory Medical Officer</div>
-            <div>Stamp of factory Medical Officer</div>
+          <div className="flex-1 p-3 space-y-2 text-left leading-relaxed">
+            <p>
+              In my opinion he / she is unfit for employment in the said manufacturing process/operation for the reason{" "}
+              <span className="inline-block border-b border-black text-center min-w-[150px] px-2 pb-0.5">{form.unfitReason || "NA"}</span>{" "}
+              he/she is referred for further examination to the Certifying Surgeon.
+            </p>
+            <p>
+              The serial number of previous certificate is{" "}
+              <span className="inline-block border-b border-black text-center min-w-[150px] px-2 pb-0.5">{form.previousCertificate || "NA"}</span>.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-start mt-6 text-sm">
+          <div className="w-[45%] text-left space-y-3">
+            <div className="w-10 h-10 rounded-full border border-black flex items-center justify-center font-bold">X</div>
+            <div className="text-xs leading-tight text-slate-700">
+              Signature or left-hand thumb<br />impression of the person examined
+            </div>
+            <div className="flex items-baseline gap-1.5 w-full">
+              <span className="shrink-0">Name of the Factory :</span>
+              <span className="border-b border-black flex-grow text-center min-w-[100px] pb-0.5">{form.factoryName || patient.company}</span>
+            </div>
+          </div>
+          <div className="w-[45%] text-right space-y-3">
+            <div className="flex items-baseline gap-1.5 justify-end">
+              <span className="shrink-0">DATE:</span>
+              <span className="border-b border-black text-center min-w-[30px] pb-0.5">{docDay}</span>/
+              <span className="border-b border-black text-center min-w-[30px] pb-0.5">{docMonth}</span>/20
+              <span className="border-b border-black text-center min-w-[30px] pb-0.5">{docYear}</span>&nbsp;&nbsp;
+              <span className="border-b border-black text-center min-w-[35px] pb-0.5">{docHour}</span>:
+              <span className="border-b border-black text-center min-w-[35px] pb-0.5">{docMinute}</span>
+              <span className="border-b border-black text-center min-w-[40px] pb-0.5">{docAmpm}</span>
+            </div>
+            <div className="pt-4 font-semibold">Signature of the Factory Medical Officer</div>
+            <div className="text-xs text-slate-500">Stamp of factory Medical Officer</div>
           </div>
         </div>
 
@@ -148,10 +207,24 @@ export default function Form33Template({ hideActions = false, patient: propPatie
               <th>Signature of the Factory medical Officer with date.</th>
             </tr>
             <tr>
-              <td>DATE:- <span className="form33-filled form33-date-part">{exam[0]}</span>/<span className="form33-filled form33-date-part">{exam[1]}</span>/20<span className="form33-filled form33-date-part">{exam[2]}</span></td>
+              <td style={{ verticalAlign: "middle" }}>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span>DATE:-</span>
+                  <span className="border-b border-black text-center min-w-[24px] pb-0.5">{exam[0]}</span>/
+                  <span className="border-b border-black text-center min-w-[24px] pb-0.5">{exam[1]}</span>/20
+                  <span className="border-b border-black text-center min-w-[24px] pb-0.5">{exam[2]}</span>
+                </div>
+              </td>
               <td>{form.extensionNote}</td>
               <td>{form.symptoms}</td>
-              <td>DATE:- <span className="form33-filled form33-date-part">{doctor[0]}</span>/<span className="form33-filled form33-date-part">{doctor[1]}</span>/20<span className="form33-filled form33-date-part">{doctor[2]}</span></td>
+              <td style={{ verticalAlign: "middle" }}>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span>DATE:-</span>
+                  <span className="border-b border-black text-center min-w-[24px] pb-0.5">{doctor[0]}</span>/
+                  <span className="border-b border-black text-center min-w-[24px] pb-0.5">{doctor[1]}</span>/20
+                  <span className="border-b border-black text-center min-w-[24px] pb-0.5">{doctor[2]}</span>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -168,11 +241,11 @@ export default function Form33Template({ hideActions = false, patient: propPatie
 
 function FieldRow({ num, label, value }) {
   return (
-    <div className="form33-field-row">
-      <span className="form33-field-num">{num}</span>
-      <span className="form33-field-label">{label}</span>
-      <span className="form33-field-colon">:-</span>
-      <span className="form33-field-value"><span className="form33-filled form33-full">{value}</span></span>
+    <div className="flex items-baseline mb-2 text-sm">
+      <span className="w-6 shrink-0 font-bold">{num}</span>
+      <span className="w-56 shrink-0">{label}</span>
+      <span className="w-4 shrink-0">:-</span>
+      <span className="border-b border-black flex-grow text-center min-w-[150px] pb-0.5">{value}</span>
     </div>
   );
 }
