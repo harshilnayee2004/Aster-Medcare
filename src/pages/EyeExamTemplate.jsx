@@ -50,25 +50,67 @@ export default function EyeExamTemplate({ hideActions = false, patient: propPati
       <div className="eye-page">
         <div className="eye-form-title">Ophthalmological Examination Report (Front)</div>
 
-        <div className="eye-top-row">
-          <span>Data Collected By :<span className="eye-filled-blank eye-wide">{form.collectedBy}</span></span>
-          <span>DATE: <span className="eye-filled-blank eye-short">{date}</span></span>
+        <div className="flex justify-between items-baseline mb-3 text-sm">
+          <div className="flex items-baseline gap-1.5 flex-grow max-w-[400px]">
+            <span className="shrink-0 font-bold">Data Collected By :</span>
+            <span className="border-b border-black flex-grow text-center min-w-[150px] pb-0.5">{form.collectedBy}</span>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="shrink-0 font-bold">DATE:</span>
+            <span className="border-b border-black text-center min-w-[100px] px-2 pb-0.5">{date}</span>
+          </div>
         </div>
 
         <table className="eye-info">
           <tbody>
             <tr>
-              <td style={{ width: "38%" }}>Name :- <span className="eye-filled-blank eye-wide">{form.name || patient.name}</span></td>
-              <td style={{ width: "24%" }}>Age:- <span className="eye-filled-blank eye-tiny">{form.age || patient.age}</span> Year</td>
-              <td style={{ width: "38%" }}>Gender:- <span className="eye-filled-blank eye-short">{form.gender || patient.gender}</span></td>
+              <td style={{ width: "38%", verticalAlign: "middle" }}>
+                <div className="flex items-baseline gap-1.5 w-full">
+                  <span className="font-bold shrink-0">Name :-</span>
+                  <span className="border-b border-black flex-grow text-center min-w-[100px] pb-0.5">{form.name || patient.name}</span>
+                </div>
+              </td>
+              <td style={{ width: "24%", verticalAlign: "middle" }}>
+                <div className="flex items-baseline gap-1.5 w-full">
+                  <span className="font-bold shrink-0">Age:-</span>
+                  <span className="border-b border-black flex-grow text-center min-w-[30px] pb-0.5">{form.age || patient.age}</span>
+                  <span className="shrink-0">Year</span>
+                </div>
+              </td>
+              <td style={{ width: "38%", verticalAlign: "middle" }}>
+                <div className="flex items-baseline gap-1.5 w-full">
+                  <span className="font-bold shrink-0">Gender:-</span>
+                  <span className="border-b border-black flex-grow text-center min-w-[100px] pb-0.5">{form.gender || patient.gender}</span>
+                </div>
+              </td>
             </tr>
             <tr>
-              <td colSpan="2">Occupation:- <span className="eye-filled-blank eye-wide">{form.occupation}</span></td>
-              <td>Allergy:- <span className="eye-filled-blank eye-short">{form.allergy}</span></td>
+              <td colSpan="2" style={{ verticalAlign: "middle" }}>
+                <div className="flex items-baseline gap-1.5 w-full">
+                  <span className="font-bold shrink-0">Occupation:-</span>
+                  <span className="border-b border-black flex-grow text-center min-w-[150px] pb-0.5">{form.occupation}</span>
+                </div>
+              </td>
+              <td style={{ verticalAlign: "middle" }}>
+                <div className="flex items-baseline gap-1.5 w-full">
+                  <span className="font-bold shrink-0">Allergy:-</span>
+                  <span className="border-b border-black flex-grow text-center min-w-[100px] pb-0.5">{form.allergy}</span>
+                </div>
+              </td>
             </tr>
             <tr>
-              <td>Past Ophthalmic History:- <span className="eye-filled-blank eye-short">{form.pastHistory}</span></td>
-              <td colSpan="2">Any Ophthalmic Complain Now:- <span className="eye-filled-blank eye-short">{form.currentComplaint}</span></td>
+              <td style={{ verticalAlign: "middle" }}>
+                <div className="flex items-baseline gap-1.5 w-full">
+                  <span className="font-bold shrink-0">Past Ophthalmic History:-</span>
+                  <span className="border-b border-black flex-grow text-center min-w-[80px] pb-0.5">{form.pastHistory}</span>
+                </div>
+              </td>
+              <td colSpan="2" style={{ verticalAlign: "middle" }}>
+                <div className="flex items-baseline gap-1.5 w-full">
+                  <span className="font-bold shrink-0">Any Ophthalmic Complain Now:-</span>
+                  <span className="border-b border-black flex-grow text-center min-w-[120px] pb-0.5">{form.currentComplaint}</span>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -129,15 +171,25 @@ export default function EyeExamTemplate({ hideActions = false, patient: propPati
           </tbody>
         </table>
 
-        <div className="eye-conclusion-line"><strong>Conclusion</strong>:- <span className="eye-filled-blank eye-wide">{form.conclusion}</span></div>
+        <div className="flex items-baseline gap-1.5 w-full mt-4 text-sm">
+          <span className="font-bold shrink-0">Conclusion</span>
+          <span className="shrink-0 font-bold">:-</span>
+          <span className="border-b border-black flex-grow text-center min-w-[200px] pb-0.5">{form.conclusion}</span>
+        </div>
 
-        <div className="eye-remarks-line"><strong>Remarks (If Any):-</strong> <span className="eye-filled-blank eye-wide">{form.remarks}</span></div>
+        <div className="flex items-baseline gap-1.5 w-full mt-3 text-sm">
+          <span className="font-bold shrink-0">Remarks (If Any):-</span>
+          <span className="border-b border-black flex-grow text-center min-w-[200px] pb-0.5">{form.remarks}</span>
+        </div>
         <div className="eye-remarks-extra"></div>
 
         <div className="eye-signature-block">
           <div className="eye-sig-line"></div>
           <div className="eye-sig-label">Sign of Doctor with stamp</div>
-          <div className="eye-sig-date">DATE:- <span className="eye-filled-blank eye-short">{date}</span></div>
+          <div className="eye-sig-date flex items-baseline gap-1.5 justify-end">
+            <span className="shrink-0">DATE:-</span>
+            <span className="border-b border-black text-center min-w-[100px] px-2 pb-0.5">{date}</span>
+          </div>
         </div>
       </div>
     </main>
