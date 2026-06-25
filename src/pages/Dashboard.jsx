@@ -211,6 +211,14 @@ export default function Dashboard() {
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl">
             <FormCard
+              title="Pre Medical Check-Up Form"
+              icon="PR"
+              status={forms.preMedical?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms.preMedical?.savedAt}
+              to={`/patients/${patientId}/pre-medical`}
+              disabled={!hasAccess("preMedical")}
+            />
+            <FormCard
               title="Post Medical Evaluation"
               icon="PM"
               status={forms.postMedical?.savedAt ? "Completed" : "Pending"}

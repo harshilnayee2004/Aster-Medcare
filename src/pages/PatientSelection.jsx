@@ -7,6 +7,7 @@ import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
 // Import form templates for off-screen rendering
+import PreMedicalTemplate from "./PreMedicalTemplate.jsx";
 import HealthRegisterTemplate from "./HealthRegisterTemplate.jsx";
 import EyeExamTemplate from "./EyeExamTemplate.jsx";
 import Form33Template from "./Form33Template.jsx";
@@ -14,13 +15,14 @@ import PostMedicalTemplate from "./PostMedicalTemplate.jsx";
 import XRayReportTemplate from "./XRayReportTemplate.jsx";
 
 const ALL_24_FORMS = [
+  { key: "preMedical", label: "Pre Medical Check-Up Form" },
   { key: "postMedical", label: "Post Medical Evaluation" },
   { key: "eyeExam", label: "Eye Examination" },
   { key: "form33", label: "Form No. 33 (Fitness)" },
   { key: "healthRegister", label: "Form No. 32 (Health Register)" },
   { key: "xrayReport", label: "X-Ray Report" },
-  ...Array.from({ length: 19 }, (_, i) => {
-    const num = String(i + 6).padStart(2, "0");
+  ...Array.from({ length: 18 }, (_, i) => {
+    const num = String(i + 7).padStart(2, "0");
     return { key: `form${num}`, label: `Medical Form ${num} (Placeholder)` };
   })
 ];
@@ -147,6 +149,7 @@ export default function PatientSelection() {
 
         const forms = fullPatient.forms || {};
         const completedFormsCount = [
+          forms.preMedical?.savedAt,
           forms.healthRegister?.savedAt,
           forms.eyeExam?.savedAt,
           forms.form33?.savedAt,
@@ -551,7 +554,7 @@ export default function PatientSelection() {
                     onChange={(e) => setModalFormType(e.target.value)}
                   >
                     <option value="All">All Combined (Include All)</option>
-                    {ALL_24_FORMS.slice(0, 5).map(f => (
+                    {ALL_24_FORMS.slice(0, 6).map(f => (
                       <option key={f.key} value={f.key}>{f.label}</option>
                     ))}
                   </select>
@@ -593,6 +596,11 @@ export default function PatientSelection() {
             zIndex: -1000 
           }}
         >
+          {pdfPatient.forms?.preMedical?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <PreMedicalTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
           {pdfPatient.forms?.healthRegister?.savedAt && (
             <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
               <HealthRegisterTemplate hideActions={true} patient={pdfPatient} />

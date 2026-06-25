@@ -3,13 +3,14 @@ import AppShell from "../components/AppShell.jsx";
 import api from "../services/api";
 
 const ALL_24_FORMS = [
+  { key: "preMedical", label: "Pre Medical Check-Up Form" },
   { key: "postMedical", label: "Post Medical Evaluation" },
   { key: "eyeExam", label: "Eye Examination" },
   { key: "form33", label: "Form No. 33 (Fitness)" },
   { key: "healthRegister", label: "Form No. 32 (Health Register)" },
   { key: "xrayReport", label: "X-Ray Report" },
-  ...Array.from({ length: 19 }, (_, i) => {
-    const num = String(i + 6).padStart(2, "0");
+  ...Array.from({ length: 18 }, (_, i) => {
+    const num = String(i + 7).padStart(2, "0");
     return { key: `form${num}`, label: `Medical Form ${num} (Placeholder)` };
   })
 ];
@@ -129,8 +130,8 @@ export default function AdminPanel() {
     if (isDoctorOrAdmin) return;
     
     const keysToSelect = category === "built" 
-      ? ALL_24_FORMS.slice(0, 5).map(f => f.key)
-      : ALL_24_FORMS.slice(5).map(f => f.key);
+      ? ALL_24_FORMS.slice(0, 6).map(f => f.key)
+      : ALL_24_FORMS.slice(6).map(f => f.key);
     
     const newAccess = Array.from(new Set([...selectedUserAccess, ...keysToSelect]));
     setSelectedUserAccess(newAccess);
@@ -141,15 +142,15 @@ export default function AdminPanel() {
     if (isDoctorOrAdmin) return;
 
     const keysToRemove = category === "built"
-      ? ALL_24_FORMS.slice(0, 5).map(f => f.key)
-      : ALL_24_FORMS.slice(5).map(f => f.key);
+      ? ALL_24_FORMS.slice(0, 6).map(f => f.key)
+      : ALL_24_FORMS.slice(6).map(f => f.key);
 
     const newAccess = selectedUserAccess.filter(k => !keysToRemove.includes(k));
     setSelectedUserAccess(newAccess);
   };
 
-  const builtForms = ALL_24_FORMS.slice(0, 5);
-  const placeholderForms = ALL_24_FORMS.slice(5);
+  const builtForms = ALL_24_FORMS.slice(0, 6);
+  const placeholderForms = ALL_24_FORMS.slice(6);
 
   return (
     <AppShell>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import { upsertPatient } from "../utils/localStorage.js";
@@ -11,6 +11,7 @@ const initialForm = {
   company: "",
   address: "",
   photo: "",
+  signature: "",
   fatherName: "",
   occupation: ""
 };
@@ -95,6 +96,10 @@ export default function PatientRegistration() {
             <label className="field-label">Photo Upload</label>
             <input className="input file:mr-4 file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-sm" type="file" accept="image/*" onChange={(event) => handlePhoto(event.target.files[0])} />
           </div>
+          <div>
+            <label className="field-label">Patient Signature (Draw on iPad / Screen)</label>
+            <SignaturePad value={form.signature} onChange={(val) => updateField("signature", val)} />
+          </div>
           <div className="col-span-2">
             <label className="field-label" htmlFor="address">Address</label>
             <textarea id="address" className="input min-h-28" value={form.address} onChange={(event) => updateField("address", event.target.value)} />
@@ -112,6 +117,96 @@ function Field({ label, value, onChange, required }) {
     <div>
       <label className="field-label" htmlFor={id}>{label}</label>
       <input id={id} className="input" value={value} required={required} onChange={(event) => onChange(event.target.value)} />
+    </div>
+  );
+}
+
+function SignaturePad({ value, onChange }) {
+  const canvasRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  const getCanvasContext = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const ctx = canvas.getContext("2d");
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#000000";
+    return ctx;
+  };
+
+  const startDrawing = (e) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = getCanvasContext();
+    if (!ctx) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+    const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+    
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    setIsDrawing(true);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+    const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+    
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    
+    if (e.touches) e.preventDefault();
+  };
+
+  const stopDrawing = () => {
+    if (!isDrawing) return;
+    setIsDrawing(false);
+    const canvas = canvasRef.current;
+    if (canvas) {
+      onChange(canvas.toDataURL("image/png"));
+    }
+  };
+
+  const clear = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      onChange("");
+    }
+  };
+
+  return (
+    <div className="relative border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+      <canvas
+        ref={canvasRef}
+        width={300}
+        height={100}
+        className="w-full h-[100px] bg-white cursor-crosshair touch-none"
+        onMouseDown={startDrawing}
+        onMouseMove={draw}
+        onMouseUp={stopDrawing}
+        onMouseLeave={stopDrawing}
+        onTouchStart={startDrawing}
+        onTouchMove={draw}
+        onTouchEnd={stopDrawing}
+      />
+      <div className="absolute right-2 bottom-2 flex gap-2">
+        <button
+          type="button"
+          onClick={clear}
+          className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-1 px-3 rounded border border-slate-300 transition"
+        >
+          Clear
+        </button>
+      </div>
     </div>
   );
 }

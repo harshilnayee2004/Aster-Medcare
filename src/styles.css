@@ -763,21 +763,383 @@
   text-decoration: underline;
 }
 
+/* PRE MEDICAL CHECK-UP FORM */
+.premed-page {
+  width: 750px;
+  height: 1060px;
+  background: #ffffff;
+  border: 4.5pt double #b3463b; /* Red double border around the entire A4 sheet */
+  padding: 5.4pt; /* Margin space between the double red border and the black table border */
+  color: #000;
+  font-family: "Times New Roman", Times, serif;
+  margin: 0 auto;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* ─── INNER BORDER ─── */
+.premed-page .inner {
+  border: 1.5px solid #000;
+  margin: 4px;
+  height: calc(100% - 8px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── HEADER ─── */
+.premed-page .hdr {
+  display: grid;
+  grid-template-columns: 155px 1fr 155px;
+  border-bottom: 1.5px solid #000;
+  min-height: 105px;
+}
+.premed-page .hdr-left {
+  border: 1.5px solid #000;
+  margin: 6px 0 6px 6px;
+}
+.premed-page .hdr-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  text-align: center;
+  gap: 6px;
+}
+.premed-page .hdr-center .t1 {
+  font-size: 14.5pt;
+  font-weight: bold;
+}
+.premed-page .hdr-center .t2 {
+  font-size: 10.5pt;
+  font-weight: bold;
+}
+.premed-page .hdr-center .t3 {
+  font-size: 9.5pt;
+  font-weight: bold;
+  align-self: flex-start;
+  padding-left: 8px;
+  width: 100%;
+  text-align: left;
+}
+.premed-page .hdr-center .t3 span {
+  display: inline-block;
+  width: 130px;
+  border-bottom: 1px solid #000;
+  text-align: center;
+}
+.premed-page .hdr-right {
+  border: 1.5px solid #000;
+  margin: 6px 6px 6px 0;
+}
+
+/* ─── SECTION HEADING ─── */
+.premed-page .sec-head {
+  text-align: center;
+  font-size: 10pt;
+  font-weight: bold;
+  padding: 3px 0;
+  border-bottom: 1px solid #000;
+}
+
+/* ─── GENERIC ROW ─── */
+.premed-page .row {
+  display: flex;
+  border-bottom: 1px solid #000;
+  min-height: 28px;
+}
+.premed-page .row:last-child { border-bottom: none; }
+
+.premed-page .cell {
+  display: flex;
+  align-items: center;
+  padding: 3px 6px;
+  font-size: 9.5pt;
+  font-weight: bold;
+  border-right: 1px solid #000;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+.premed-page .cell:last-child { border-right: none; }
+
+/* ─── ROW 1: Form No / Name / Date Time ─── */
+.premed-page .r1-formno { width: 80px; }
+.premed-page .r1-name   { flex: 1; }
+.premed-page .r1-dt {
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 3px 6px;
+  gap: 4px;
+  border-right: none;
+  box-sizing: border-box;
+}
+.premed-page .dt-top {
+  display: flex;
+  align-items: center;
+  font-size: 9.5pt;
+  font-weight: bold;
+  gap: 2px;
+  width: 100%;
+  justify-content: space-between;
+}
+.premed-page .dt-top .dtlabel { font-size: 9.5pt; font-weight: bold; }
+.premed-page .dt-slash { width: 18px; border-bottom: 1px solid #000; display:inline-block; }
+.premed-page .dt-bottom {
+  display: flex;
+  align-items: center;
+  font-size: 9.5pt;
+  font-weight: bold;
+  gap: 1px;
+}
+.premed-page .dt-u { width: 22px; border-bottom: 1px solid #000; display:inline-block; height:14px; }
+
+/* ─── ROW ADDRESS ─── */
+.premed-page .r-addr-lbl { width: 80px; min-height: 32px; align-items: flex-start; padding-top: 5px; }
+.premed-page .r-addr-val { flex: 1; border-right: none; }
+
+/* ─── ROW CITY STATE PIN ─── */
+.premed-page .r-city  { flex: 2; }
+.premed-page .r-state { flex: 2; }
+.premed-page .r-pin   { flex: 2; border-right: none; }
+
+/* ─── ROW EMAIL PHONE ─── */
+.premed-page .r-email { flex: 2; }
+.premed-page .r-phone { flex: 2; border-right: none; }
+
+/* ─── ROW GENDER DOB GOVT ─── */
+.premed-page .r-gender { width: 110px; }
+.premed-page .r-dob    { width: 175px; }
+.premed-page .r-govt1  { flex: 1; }
+.premed-page .r-govt2  { flex: 1; border-right: none; }
+
+.premed-page .dob-inner {
+  display: flex; align-items: flex-end; gap: 2px; font-size: 9.5pt; font-weight: bold;
+}
+.premed-page .dob-line { width: 18px; border-bottom: 1px solid #000; display:inline-block; height:14px; }
+.premed-page .yr-wrap { display: flex; flex-direction: column; align-items: center; }
+.premed-page .yr-line { width: 36px; border-bottom: 1px solid #000; display:inline-block; height:14px; }
+.premed-page .yr-lbl  { font-size: 7pt; font-weight: bold; }
+
+/* ─── ROW OCCUPATION ─── */
+.premed-page .r-occ-lbl {
+  width: 110px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-top: 4px;
+  min-height: 52px;
+}
+.premed-page .occ-mid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-right: 1px solid #000;
+}
+.premed-page .occ-col {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #000;
+}
+.premed-page .occ-col:last-child { border-right: none; }
+.premed-page .occ-col-head {
+  font-size: 9.5pt;
+  font-weight: bold;
+  text-align: center;
+  border-bottom: 1px solid #000;
+  padding: 3px 4px;
+}
+.premed-page .occ-col-body { flex: 1; }
+
+.premed-page .r-blood {
+  width: 120px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 4px 6px;
+  border-right: none;
+  min-height: 52px;
+}
+.premed-page .blood-lbl { font-size: 9.5pt; font-weight: bold; }
+.premed-page .blood-box {
+  width: 72px;
+  height: 32px;
+  border: 1.5px solid #000;
+  margin-top: 4px;
+}
+
+/* ─── ROW POST ─── */
+.premed-page .r-post-lbl { width: 110px; }
+.premed-page .r-post-val { width: 155px; border-right: 1px solid #000; }
+
+/* POST row is half-width — right side is part of blood group cell continuation */
+.premed-page .row-post {
+  display: flex;
+  border-bottom: 1px solid #000;
+}
+
+/* ─── HISTORY SECTION ─── */
+.premed-page .hist-head {
+  text-align: center;
+  font-size: 10pt;
+  font-weight: bold;
+  padding: 4px 0;
+  border-bottom: 1px solid #000;
+  border-top: 1px solid #000;
+}
+
+.premed-page .hist-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.5pt;
+}
+.premed-page .hist-table td {
+  border: 1px solid #000;
+  padding: 4px 6px;
+  font-weight: bold;
+}
+.premed-page .hist-table .t-cond   { text-align: center; width: 22%; }
+.premed-page .hist-table .t-yn     { text-align: center; width: 5%; }
+.premed-page .hist-table .t-cond2  { text-align: center; width: 22%; }
+.premed-page .hist-table .t-yn2    { text-align: center; width: 5%; }
+.premed-page .hist-table .t-yn-last { text-align: center; width: 5%; border-right: none; }
+/* Remove double borders on left/right edges */
+.premed-page .hist-table tr td:first-child { border-left: none; }
+.premed-page .hist-table tr td:last-child  { border-right: none; }
+.premed-page .hist-table tr:last-child td  { border-bottom: none; }
+
+/* ─── ANGAT SECTION ─── */
+.premed-page .angat-head {
+  text-align: center;
+  font-size: 10pt;
+  font-weight: bold;
+  padding: 3px 0;
+  border-bottom: 1px solid #000;
+  border-top: 1px solid #000;
+}
+
+/* ─── PERSONAL INFO ROWS ─── */
+.premed-page .r-khorak  { width: 110px; }
+.premed-page .r-khorakv { flex: 1; }
+.premed-page .r-allergy { width: 88px; }
+.premed-page .r-allergyv{ flex: 1; border-right: none; }
+
+.premed-page .r-vyasan  { width: 110px; }
+.premed-page .r-vyasanv { flex: 1; }
+.premed-page .r-qty     { width: 50px; }
+.premed-page .r-qtyv    { flex: 1; }
+.premed-page .r-anyab   { width: 108px; }
+.premed-page .r-anyabv  { flex: 1; border-right: none; }
+
+.premed-page .r-family  { flex: 1; border-right: none; }
+.premed-page .r-idmark  { flex: 1; border-right: none; padding: 4px 6px; font-size: 9.5pt; font-weight: bold; min-height: 28px; }
+.premed-page .r-other   { flex: 1; border-right: none; padding: 4px 6px; font-size: 9.5pt; font-weight: bold; min-height: 28px; }
+
+/* ─── CONSENT ─── */
+.premed-page .consent-head {
+  text-align: center;
+  font-size: 10pt;
+  font-weight: bold;
+  padding: 3px 0;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+}
+.premed-page .consent-body {
+  padding: 8px 12px;
+  font-size: 9.5pt;
+  font-weight: bold;
+  line-height: 1.65;
+  text-align: center;
+  border-bottom: 1px solid #000;
+}
+.premed-page .sig-area {
+  display: flex;
+  padding: 8px 12px;
+  border-bottom: 1px solid #000;
+  min-height: 95px;
+  align-items: flex-start;
+}
+.premed-page .sig-box {
+  width: 130px;
+  height: 80px;
+  border: 1.5px solid #000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 4px;
+  margin-left: 10px;
+}
+.premed-page .sig-x {
+  font-size: 18pt;
+  font-weight: bold;
+  font-family: 'Times New Roman', serif;
+}
+
+/* Empty space above footer */
+.premed-page .empty-space {
+  min-height: 70px;
+  border-bottom: 1px solid #000;
+  flex: 1;
+}
+
+/* ─── FOOTER ─── */
+.premed-page .footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 5px 10px 5px 10px;
+  font-size: 9pt;
+  font-weight: bold;
+  min-height: 38px;
+  box-sizing: border-box;
+}
+.premed-page .footer-center {
+  text-align: center;
+  flex: 1;
+}
+.premed-page .footer-right { font-size: 9.5pt; font-weight: bold; }
+
+/* Circle select styling for checked items */
+.premed-circle-select {
+  border: 1.2pt solid #000;
+  border-radius: 50%;
+  padding: 0.5pt 4.5pt;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.premed-circle-highlight {
+  border: 1.2pt solid #000;
+  border-radius: 50%;
+  padding: 0.5pt 6.5pt;
+  font-weight: bold;
+}
+
 /* PRINT STYLING & PAGE BREAKS */
 .page-break {
   page-break-after: always;
   break-after: page;
 }
 
+@page premed-print-page {
+  size: A4 portrait;
+  margin: 0 !important; /* Forces 0 margins on print, hiding headers/footers */
+}
+
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm !important; /* Forces 10mm margins on print, hiding headers/footers */
+    margin: 0 !important; /* Forces 0 margins on print, hiding headers/footers */
   }
 
   html, body {
-    width: 190mm;
-    height: 277mm;
+    width: 210mm !important;
+    height: 297mm !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
@@ -815,7 +1177,7 @@
     height: 277mm !important; /* 297mm - 20mm margin */
     max-height: 277mm !important;
     box-sizing: border-box !important;
-    margin: 0 auto !important;
+    margin: 10mm auto !important; /* Centered with 10mm margins on A4 */
     padding: 8mm 10mm !important; /* Internal padding inside the border */
     page-break-inside: avoid !important;
     break-inside: avoid !important;
@@ -826,9 +1188,31 @@
     justify-content: space-between !important;
   }
 
+  /* Specific print styles for the Pre-Medical page to achieve pixel-perfection */
+  .premed-page {
+    page: premed-print-page;
+    width: calc(210mm - 48pt) !important;
+    height: calc(297mm - 48pt) !important;
+    max-height: calc(297mm - 48pt) !important;
+    box-sizing: border-box !important;
+    margin: 24pt auto !important; /* Exact margins of original PDF outer border */
+    padding: 5.4pt !important; /* Margins between outer red border and black table */
+    border: 4.5pt double #b3463b !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    overflow: hidden !important;
+    break-inside: avoid !important;
+  }
+
   /* Compact table spacing to ensure content fits */
-  .post-table, .eye-info, .eye-params, .eye-titmus, .form33-fitness, .form32-table {
+  .post-table, .eye-info, .eye-params, .eye-titmus, .form33-fitness, .form32-table, .premed-table {
     margin-bottom: 4px !important;
+  }
+
+  .premed-table td {
+    padding: 3px 5px !important;
+    font-size: 10px !important;
   }
 }
 

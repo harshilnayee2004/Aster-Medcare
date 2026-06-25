@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import api from "../services/api";
+import PreMedicalTemplate from "./PreMedicalTemplate.jsx";
 import HealthRegisterTemplate from "./HealthRegisterTemplate.jsx";
 import EyeExamTemplate from "./EyeExamTemplate.jsx";
 import Form33Template from "./Form33Template.jsx";
@@ -35,6 +36,7 @@ export default function FullReportTemplate() {
 
   const forms = patient.forms || {};
   const completedCount = [
+    forms.preMedical?.savedAt,
     forms.healthRegister?.savedAt,
     forms.eyeExam?.savedAt,
     forms.form33?.savedAt,
@@ -77,7 +79,7 @@ export default function FullReportTemplate() {
             &larr; Back to Dashboard
           </Link>
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            {completedCount} of 5 Reports Compiled
+            {completedCount} of 6 Reports Compiled
           </span>
         </div>
         <div className="flex gap-2">
@@ -101,6 +103,11 @@ export default function FullReportTemplate() {
           </div>
         ) : (
           <>
+            {forms.preMedical?.savedAt && (
+              <div className="page-break">
+                <PreMedicalTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
             {forms.healthRegister?.savedAt && (
               <div className="page-break">
                 <HealthRegisterTemplate hideActions={true} patient={patient} />

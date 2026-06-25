@@ -12,12 +12,15 @@ import PatientRegistration from "./pages/PatientRegistration.jsx";
 import PatientSelection from "./pages/PatientSelection.jsx";
 import PostMedicalForm from "./pages/PostMedicalForm.jsx";
 import PostMedicalTemplate from "./pages/PostMedicalTemplate.jsx";
+import PreMedicalForm from "./pages/PreMedicalForm.jsx";
+import PreMedicalTemplate from "./pages/PreMedicalTemplate.jsx";
 import XRayReportForm from "./pages/XRayReportForm.jsx";
 import XRayReportTemplate from "./pages/XRayReportTemplate.jsx";
 import FullReportTemplate from "./pages/FullReportTemplate.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import Analytics from "./pages/Analytics.jsx";
 import BulkImport from "./pages/BulkImport.jsx";
+import PdfFiller from "./pages/PdfFiller.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
 // Route protection wrapper for authenticated users
@@ -128,6 +131,18 @@ export default function App() {
         </ProtectedRoute>
       } />
       
+      <Route path="/patients/:patientId/pre-medical" element={
+        <FormProtectedRoute formKey="preMedical">
+          <PreMedicalForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/pre-medical/preview" element={
+        <FormProtectedRoute formKey="preMedical">
+          <PreMedicalTemplate />
+        </FormProtectedRoute>
+      } />
+      
       <Route path="/patients/:patientId/post-medical" element={
         <FormProtectedRoute formKey="postMedical">
           <PostMedicalForm />
@@ -191,6 +206,12 @@ export default function App() {
       <Route path="/patients/:patientId/full-report/preview" element={
         <ProtectedRoute>
           <FullReportTemplate />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/pdf-filler" element={
+        <ProtectedRoute>
+          <PdfFiller />
         </ProtectedRoute>
       } />
 
