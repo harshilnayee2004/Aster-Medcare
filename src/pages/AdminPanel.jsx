@@ -9,10 +9,24 @@ const ALL_24_FORMS = [
   { key: "form33", label: "Form No. 33 (Fitness)" },
   { key: "healthRegister", label: "Form No. 32 (Health Register)" },
   { key: "xrayReport", label: "X-Ray Report" },
-  ...Array.from({ length: 18 }, (_, i) => {
-    const num = String(i + 7).padStart(2, "0");
-    return { key: `form${num}`, label: `Medical Form ${num} (Placeholder)` };
-  })
+  { key: "4-form-airport-bohw", label: "Form No. XI (Factory & BOCW)" },
+  { key: "5-form-height-pass", label: "Height Pass Test Report" },
+  { key: "10-form-ophthal-form-6", label: "Ophthalmic Form 6 (Eye Examination)" },
+  { key: "11-form-audiometry-front", label: "Audiometry Report (Front)" },
+  { key: "15-form-vaccination-front", label: "Vaccination Front" },
+  { key: "16-form-vaccination-back", label: "Vaccination Back" },
+  { key: "17-form-food-handler-certificate", label: "Food Handler Certificate" },
+  { key: "18-form-vaccine-ircs-forms-2", label: "ASHTAM Adult Vaccination Certificate" },
+  { key: "25-form-for-medical-fitness-certificate-format", label: "Medical Fitness Certificate" },
+  { key: "26-form-death-certificate", label: "Death Certificate" },
+  { key: "35-form-airport-bohw-ht-front", label: "Airport BOHW-HT Front" },
+  { key: "36-form-airport-bohw-ht-back", label: "Airport BOHW-HT Back" },
+  { key: "form09", label: "Medical Form 09 (Placeholder)" },
+  { key: "form10", label: "Medical Form 10 (Placeholder)" },
+  { key: "form12", label: "Medical Form 12 (Placeholder)" },
+  { key: "form13", label: "Medical Form 13 (Placeholder)" },
+  { key: "form14", label: "Medical Form 14 (Placeholder)" },
+  { key: "form23", label: "Medical Form 23 (Placeholder)" }
 ];
 
 export default function AdminPanel() {
@@ -130,8 +144,8 @@ export default function AdminPanel() {
     if (isDoctorOrAdmin) return;
     
     const keysToSelect = category === "built" 
-      ? ALL_24_FORMS.slice(0, 6).map(f => f.key)
-      : ALL_24_FORMS.slice(6).map(f => f.key);
+      ? ALL_24_FORMS.slice(0, 18).map(f => f.key)
+      : ALL_24_FORMS.slice(18).map(f => f.key);
     
     const newAccess = Array.from(new Set([...selectedUserAccess, ...keysToSelect]));
     setSelectedUserAccess(newAccess);
@@ -142,15 +156,15 @@ export default function AdminPanel() {
     if (isDoctorOrAdmin) return;
 
     const keysToRemove = category === "built"
-      ? ALL_24_FORMS.slice(0, 6).map(f => f.key)
-      : ALL_24_FORMS.slice(6).map(f => f.key);
+      ? ALL_24_FORMS.slice(0, 18).map(f => f.key)
+      : ALL_24_FORMS.slice(18).map(f => f.key);
 
     const newAccess = selectedUserAccess.filter(k => !keysToRemove.includes(k));
     setSelectedUserAccess(newAccess);
   };
 
-  const builtForms = ALL_24_FORMS.slice(0, 6);
-  const placeholderForms = ALL_24_FORMS.slice(6);
+  const builtForms = ALL_24_FORMS.slice(0, 18);
+  const placeholderForms = ALL_24_FORMS.slice(18);
 
   return (
     <AppShell>

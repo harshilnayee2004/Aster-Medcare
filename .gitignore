@@ -18,3 +18,7 @@ Thumbs.db
 .env.test.local
 .env.production.local
 
+# Local scratch directory
+scratch/
+
+

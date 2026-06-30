@@ -193,7 +193,17 @@ export default function HealthRegisterTemplate({ hideActions = false, patient: p
             <tr style={{ height: "88px" }}>
               <td className="form32-ctr form32-mid">17</td>
               <td className="form32-mid">Signature with date of the factory Medical Officer/ the Certifying Surgeon.</td>
-              <td className="form32-ctr form32-bot" colSpan="2">{displayDate(form.doctorSignatureDate || savedAt)}</td>
+              <td className="form32-ctr form32-bot relative" colSpan="2">
+                <div className="flex flex-col items-center justify-center h-full min-h-[70px]">
+                  <img 
+                    src={`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/forms/doctor-signature`} 
+                    alt="Doctor Signature" 
+                    className="h-12 object-contain" 
+                    onError={(e) => { e.target.style.display = 'none'; }} 
+                  />
+                  <div className="text-[10px] mt-1">{displayDate(form.doctorSignatureDate || savedAt)}</div>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>

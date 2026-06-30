@@ -3,42 +3,13 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { getPatient } from "../utils/localStorage.js";
 import api from "../services/api";
 
-function dateParts(value) {
-  if (!value) return ["", "", ""];
-  const parts = value.split("-");
+function formatDateToDMY(val) {
+  if (!val) return "";
+  const parts = val.split("-"); // YYYY-MM-DD
   if (parts.length === 3) {
-    return [parts[2], parts[1], parts[0]];
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
   }
-  return ["", "", ""];
-}
-
-function datetimeParts(value) {
-  if (!value) return ["", "", "", "", "", ""];
-  const d = new Date(value);
-  if (isNaN(d.getTime())) return ["", "", "", "", "", ""];
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = String(d.getFullYear());
-  let hours = d.getHours();
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  const hourStr = String(hours).padStart(2, '0');
-  return [day, month, year, hourStr, minutes, ampm];
-}
-
-function calculateAge(dobString) {
-  if (!dobString) return "";
-  const dob = new Date(dobString);
-  if (isNaN(dob.getTime())) return "";
-  const today = new Date();
-  let age = today.getFullYear() - dob.getFullYear();
-  const m = today.getMonth() - dob.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-    age--;
-  }
-  return String(age);
+  return val;
 }
 
 function PdfPage({ pdfUrl, pageNum }) {
@@ -96,7 +67,7 @@ function PdfPage({ pdfUrl, pageNum }) {
   );
 }
 
-export default function PreMedicalTemplate({ hideActions = false, patient: propPatient }) {
+export default function VaccinationFrontTemplate({ hideActions = false, patient: propPatient }) {
   const { patientId } = useParams();
   const [patient, setPatient] = useState(propPatient || null);
   const [loading, setLoading] = useState(!propPatient);
@@ -132,86 +103,104 @@ export default function PreMedicalTemplate({ hideActions = false, patient: propP
       try {
         setLoadingPdf(true);
         const forms = patient.forms || {};
-        const actualForm = forms.preMedical?.data || {};
-
-        // Parse date and time separately
-        const [day, month, year, hourStr, minutes, ampm] = datetimeParts(actualForm.dateTime || "");
-        const dateStr = day ? `${day}/${month}/${year}` : "";
-        const timeStr = hourStr ? `${hourStr}:${minutes} ${ampm}` : "";
-
-        // Format DOB cleanly as DD/MM/YYYY
-        const [dobDay, dobMonth, dobYear] = dateParts(actualForm.dob || patient.dob || "");
-        const dobStr = dobDay ? `${dobDay}/${dobMonth}/${dobYear}` : "";
-        
-        // Calculate age automatically from DOB, or fallback to saved age
-        const computedAge = calculateAge(actualForm.dob || patient.dob || "") || String(actualForm.age || patient.age || "");
+        const actualForm = forms["15-form-vaccination-front"]?.data || {};
 
         // Stamping mapping
         const values = {
-          collectedBy: actualForm.collectedBy || "",
+          dataCollectedBy: actualForm.dataCollectedBy || "",
           formNo: actualForm.formNo || "",
-          date: dateStr,
-          time: timeStr,
           name: actualForm.name || patient.name || "",
-          address: actualForm.address || patient.address || "",
-          city: actualForm.city || "",
-          state: actualForm.state || "",
-          pinNo: actualForm.pinNo || "",
-          emailId: actualForm.emailId || "",
-          phoneNo: actualForm.phoneNo || patient.mobile || "",
+          date: formatDateToDMY(actualForm.regDate || ""),
+          regDate: formatDateToDMY(actualForm.regDate || ""),
+          regTime: actualForm.regTime || "",
+          email: actualForm.email || patient.email || "",
+          phone: actualForm.phone || patient.mobile || "",
           gender: actualForm.gender || patient.gender || "",
-          dob: dobStr,
-          age: computedAge,
+          dob: formatDateToDMY(actualForm.dob || patient.dob || ""),
+          age: actualForm.age || (patient.age ? String(patient.age) : ""),
           govtIdProof: actualForm.govtIdProof || "",
-          govtIdProofNo: actualForm.govtIdProofNo || "",
-          occupation: actualForm.occupation || "",
-          occupationName: actualForm.occupationName || "",
+          govtIdProofNo: actualForm.govtIdProofNo || patient.aadharNo || "",
+          
+          // Checkboxes occupation
+          occEmployee: actualForm.occupation === "Employee" ? "√" : "",
+          occBusinessman: actualForm.occupation === "Businessman" ? "√" : "",
+          occStudent: actualForm.occupation === "Student" ? "√" : "",
+          
+          occupationName: actualForm.occupationName || patient.company || "",
           occupationId: actualForm.occupationId || "",
-          bloodGroup: actualForm.bloodGroup || "",
-          post: actualForm.post || "",
+          bloodGroup: actualForm.bloodGroup || patient.bloodGroup || "",
+          address: actualForm.address || patient.address || "",
+          city: actualForm.city || patient.city || "",
+          state: actualForm.state || patient.state || "",
+          pin: actualForm.pin || patient.pinCode || "",
+          height: actualForm.height || (patient.height ? String(patient.height) : ""),
+          weight: actualForm.weight || (patient.weight ? String(patient.weight) : ""),
           
-          // Diseases
-          asthma: actualForm.asthma || "NO",
-          tb: actualForm.tb || "NO",
-          fits: actualForm.fits || "NO",
-          mental: actualForm.mental || "NO",
-          eyeDisease: actualForm.eyeDisease || "NO",
-          heartDisease: actualForm.heartDisease || "NO",
-          skinDisease: actualForm.skinDisease || "NO",
-          injuryFracture: actualForm.injuryFracture || "NO",
-          surgery: actualForm.surgery || "NO",
-          infectiousDisease: actualForm.infectiousDisease || "NO",
+          // Protect checkboxes
+          protectFlu: actualForm.protectFlu ? "√" : "",
+          protectHepA: actualForm.protectHepA ? "√" : "",
+          protectHpv: actualForm.protectHpv ? "√" : "",
+          protectTyphoid: actualForm.protectTyphoid ? "√" : "",
+          protectCovid19: actualForm.protectCovid19 ? "√" : "",
+          protectPneumonia: actualForm.protectPneumonia ? "√" : "",
+          protectHepB: actualForm.protectHepB ? "√" : "",
+          protectMeningitis: actualForm.protectMeningitis ? "√" : "",
+          protectVaricella: actualForm.protectVaricella ? "√" : "",
+          protectOther: actualForm.protectOther ? "√" : "",
+          otherSpecify: actualForm.otherSpecify || "",
+
+          // Safety Questionnaire mappings
+          q1_yes: actualForm.q1_physicalExam === "YES" ? "√" : "",
+          q1_no: actualForm.q1_physicalExam === "YES" ? " " : (actualForm.q1_physicalExam === "NO" ? "√" : ""),
           
-          // Personal Details
-          diet: actualForm.diet || "",
-          allergy: actualForm.allergy || "NO",
-          addiction: actualForm.addiction || "NO",
-          addictionQty: actualForm.addictionQty || "",
-          otherIllness: actualForm.otherIllness || "NO",
-          familyBp: actualForm.familyBp ? "YES" : "NO",
-          familyDiabetes: actualForm.familyDiabetes ? "YES" : "NO",
-          familyHeart: actualForm.familyHeart ? "YES" : "NO",
-          familyCancer: actualForm.familyCancer ? "YES" : "NO",
+          q2_yes: actualForm.q2_feverToday === "YES" ? "√" : "",
+          q2_no: actualForm.q2_feverToday === "YES" ? " " : (actualForm.q2_feverToday === "NO" ? "√" : ""),
           
-          identificationMark: actualForm.identificationMark || "",
-          otherDetails: actualForm.otherDetails || "NA",
-          signature: patient.signature || "",
-          verifiedBy: actualForm.verifiedBy || "",
-          verifiedDateTime: actualForm.verifiedDateTime || ""
+          q3_yes: actualForm.q3_allergies === "YES" ? "√" : "",
+          q3_no: actualForm.q3_allergies === "YES" ? " " : (actualForm.q3_allergies === "NO" ? "√" : ""),
+          q3_allergicTo: actualForm.q3_allergies === "YES" ? (actualForm.q3_allergicTo || "") : "",
+          
+          q4_yes: actualForm.q4_seriousReaction === "YES" ? "√" : "",
+          q4_no: actualForm.q4_seriousReaction === "YES" ? " " : (actualForm.q4_seriousReaction === "NO" ? "√" : ""),
+          
+          q5_yes: actualForm.q5_neurological === "YES" ? "√" : "",
+          q5_no: actualForm.q5_neurological === "YES" ? " " : (actualForm.q5_neurological === "NO" ? "√" : ""),
+          
+          q6_yes: actualForm.q6_vaccinesPast28 === "YES" ? "√" : "",
+          q6_no: actualForm.q6_vaccinesPast28 === "YES" ? " " : (actualForm.q6_vaccinesPast28 === "NO" ? "√" : ""),
+          q6_vaccineList: actualForm.q6_vaccinesPast28 === "YES" ? (actualForm.q6_vaccineList || "") : "",
+          
+          q7_yes: actualForm.q7_healthProblems === "YES" ? "√" : "",
+          q7_no: actualForm.q7_healthProblems === "YES" ? " " : (actualForm.q7_healthProblems === "NO" ? "√" : ""),
+          
+          q8_yes: actualForm.q8_pregnant === "YES" ? "√" : "",
+          q8_no: (actualForm.q8_pregnant === "YES" || actualForm.q8_pregnant === "NA") ? " " : (actualForm.q8_pregnant === "NO" ? "√" : ""),
+          q8_na: actualForm.q8_pregnant === "NA" ? "√" : "",
+          
+          q9_yes: actualForm.q9_immuneProblem === "YES" ? "√" : "",
+          q9_no: actualForm.q9_immuneProblem === "YES" ? " " : (actualForm.q9_immuneProblem === "NO" ? "√" : ""),
+          
+          q10_yes: actualForm.q10_weakenMedication === "YES" ? "√" : "",
+          q10_no: actualForm.q10_weakenMedication === "YES" ? " " : (actualForm.q10_weakenMedication === "NO" ? "√" : ""),
+          q10_medicationList: actualForm.q10_weakenMedication === "YES" ? (actualForm.q10_medicationList || "") : "",
+          
+          q11_yes: actualForm.q11_transfusion === "YES" ? "√" : "",
+          q11_no: actualForm.q11_transfusion === "YES" ? " " : (actualForm.q11_transfusion === "NO" ? "√" : ""),
+          q11_transfusionList: actualForm.q11_transfusion === "YES" ? (actualForm.q11_transfusionList || "") : "",
         };
 
-        const response = await api.post(`/forms/fill/1-form-personal-details`, { values }, {
+        const response = await api.post(`/forms/fill/15-form-vaccination-front`, { values }, {
           responseType: "blob"
         });
 
-        const outputFilename = `filled_1_FORM_Personal_Details_${patient.patientId}.pdf`;
+        const outputFilename = `filled_Vaccination_Front_${patient.patientId}.pdf`;
 
         const blob = new Blob([response.data], { type: "application/pdf" });
         const url = window.URL.createObjectURL(blob);
         setPdfUrl(url);
         setDownloadFilename(outputFilename);
       } catch (err) {
-        console.error("Failed to generate Pre-Medical PDF:", err);
+        console.error("Failed to generate Vaccination Front PDF:", err);
       } finally {
         setLoadingPdf(false);
       }
@@ -285,7 +274,7 @@ export default function PreMedicalTemplate({ hideActions = false, patient: propP
   };
 
   if (loading) {
-    return <div className="text-center py-20 text-slate-500 font-semibold">Loading Pre Medical Report...</div>;
+    return <div className="text-center py-20 text-slate-500 font-semibold">Loading Report...</div>;
   }
 
   if (!patient) return <Navigate to="/patients" replace />;
@@ -294,7 +283,7 @@ export default function PreMedicalTemplate({ hideActions = false, patient: propP
     <main className={hideActions ? "" : "template-screen"}>
       {!hideActions && (
         <div className="template-actions print:hidden">
-          <Link to={`/patients/${patientId}/pre-medical`} className="button-secondary">Back to Form</Link>
+          <Link to={`/patients/${patientId}/vaccination-front`} className="button-secondary">Back to Form</Link>
           <button onClick={handleDownload} className="button-secondary bg-white text-slate-700 hover:text-brand">Download PDF</button>
           <button onClick={handlePrint} className="button-primary">Print PDF</button>
         </div>
@@ -309,7 +298,7 @@ export default function PreMedicalTemplate({ hideActions = false, patient: propP
           {hideActions && (
             <div data-html2canvas-ignore="true" className="flex items-center justify-between border-b border-line pb-3 print:hidden">
               <h3 className="text-sm font-bold text-slate-800">
-                Pre-Medical PDF Document (Stamped)
+                Vaccination Front PDF Document (Stamped)
               </h3>
               <button
                 onClick={handleDownload}
@@ -328,7 +317,7 @@ export default function PreMedicalTemplate({ hideActions = false, patient: propP
         </div>
       ) : (
         <div className="max-w-[800px] mx-auto bg-red-50 p-12 border border-red-200 text-red-700 rounded-xl text-center font-medium print:hidden">
-          Failed to load Pre-Medical PDF template. Please check configuration.
+          Failed to load PDF template.
         </div>
       )}
     </main>

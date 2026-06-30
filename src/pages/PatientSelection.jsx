@@ -13,6 +13,18 @@ import EyeExamTemplate from "./EyeExamTemplate.jsx";
 import Form33Template from "./Form33Template.jsx";
 import PostMedicalTemplate from "./PostMedicalTemplate.jsx";
 import XRayReportTemplate from "./XRayReportTemplate.jsx";
+import AirportBohwTemplate from "./AirportBohwTemplate.jsx";
+import HeightPassTemplate from "./HeightPassTemplate.jsx";
+import OphthalForm6Template from "./OphthalForm6Template.jsx";
+import AudiometryFrontTemplate from "./AudiometryFrontTemplate.jsx";
+import VaccineCertificateTemplate from "./VaccineCertificateTemplate.jsx";
+import FitnessCertificateTemplate from "./FitnessCertificateTemplate.jsx";
+import DeathCertificateTemplate from "./DeathCertificateTemplate.jsx";
+import AirportBohwHtFrontTemplate from "./AirportBohwHtFrontTemplate.jsx";
+import AirportBohwHtBackTemplate from "./AirportBohwHtBackTemplate.jsx";
+import FoodHandlerTemplate from "./FoodHandlerTemplate.jsx";
+import VaccinationFrontTemplate from "./VaccinationFrontTemplate.jsx";
+import VaccinationBackTemplate from "./VaccinationBackTemplate.jsx";
 
 const ALL_24_FORMS = [
   { key: "preMedical", label: "Pre Medical Check-Up Form" },
@@ -21,10 +33,24 @@ const ALL_24_FORMS = [
   { key: "form33", label: "Form No. 33 (Fitness)" },
   { key: "healthRegister", label: "Form No. 32 (Health Register)" },
   { key: "xrayReport", label: "X-Ray Report" },
-  ...Array.from({ length: 18 }, (_, i) => {
-    const num = String(i + 7).padStart(2, "0");
-    return { key: `form${num}`, label: `Medical Form ${num} (Placeholder)` };
-  })
+  { key: "4-form-airport-bohw", label: "Form No. XI (Factory & BOCW)" },
+  { key: "5-form-height-pass", label: "Height Pass Test Report" },
+  { key: "10-form-ophthal-form-6", label: "Ophthalmic Form 6 (Eye Examination)" },
+  { key: "11-form-audiometry-front", label: "Audiometry Report (Front)" },
+  { key: "17-form-food-handler-certificate", label: "Food Handler Certificate" },
+  { key: "15-form-vaccination-front", label: "Vaccination Front" },
+  { key: "16-form-vaccination-back", label: "Vaccination Back" },
+  { key: "18-form-vaccine-ircs-forms-2", label: "ASHTAM Adult Vaccination Certificate" },
+  { key: "25-form-for-medical-fitness-certificate-format", label: "Medical Fitness Certificate" },
+  { key: "26-form-death-certificate", label: "Death Certificate" },
+  { key: "35-form-airport-bohw-ht-front", label: "Airport BOHW-HT Front" },
+  { key: "36-form-airport-bohw-ht-back", label: "Airport BOHW-HT Back" },
+  { key: "form09", label: "Medical Form 09 (Placeholder)" },
+  { key: "form10", label: "Medical Form 10 (Placeholder)" },
+  { key: "form12", label: "Medical Form 12 (Placeholder)" },
+  { key: "form13", label: "Medical Form 13 (Placeholder)" },
+  { key: "form14", label: "Medical Form 14 (Placeholder)" },
+  { key: "form23", label: "Medical Form 23 (Placeholder)" }
 ];
 
 export default function PatientSelection() {
@@ -154,7 +180,19 @@ export default function PatientSelection() {
           forms.eyeExam?.savedAt,
           forms.form33?.savedAt,
           forms.postMedical?.savedAt,
-          forms.xrayReport?.savedAt
+          forms.xrayReport?.savedAt,
+          forms["4-form-airport-bohw"]?.savedAt,
+          forms["5-form-height-pass"]?.savedAt,
+          forms["10-form-ophthal-form-6"]?.savedAt,
+          forms["11-form-audiometry-front"]?.savedAt,
+          forms["18-form-vaccine-ircs-forms-2"]?.savedAt,
+          forms["25-form-for-medical-fitness-certificate-format"]?.savedAt,
+          forms["26-form-death-certificate"]?.savedAt,
+          forms["35-form-airport-bohw-ht-front"]?.savedAt,
+          forms["36-form-airport-bohw-ht-back"]?.savedAt,
+          forms["17-form-food-handler-certificate"]?.savedAt,
+          forms["15-form-vaccination-front"]?.savedAt,
+          forms["16-form-vaccination-back"]?.savedAt
         ].filter(Boolean).length;
 
         if (completedFormsCount === 0) {
@@ -171,6 +209,21 @@ export default function PatientSelection() {
         if (!container) {
           console.error("Off-screen renderer not found in DOM");
           continue;
+        }
+
+        // Wait dynamically for all asynchronous PDF canvases and loading states to settle
+        let renderAttempts = 0;
+        while (renderAttempts < 80) { // Max 8 seconds
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          const text = container.innerText || "";
+          if (!text.includes("Rendering page") && 
+              !text.includes("Stamping data") && 
+              !text.includes("Loading")) {
+            // Give an extra 100ms for stable layout paint
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            break;
+          }
+          renderAttempts++;
         }
 
         const pageElements = container.getElementsByClassName("pdf-page");
@@ -624,6 +677,66 @@ export default function PatientSelection() {
           {pdfPatient.forms?.xrayReport?.savedAt && (
             <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
               <XRayReportTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["4-form-airport-bohw"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <AirportBohwTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["5-form-height-pass"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <HeightPassTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["10-form-ophthal-form-6"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <OphthalForm6Template hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["11-form-audiometry-front"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <AudiometryFrontTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["15-form-vaccination-front"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <VaccinationFrontTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["16-form-vaccination-back"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <VaccinationBackTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["17-form-food-handler-certificate"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <FoodHandlerTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["18-form-vaccine-ircs-forms-2"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <VaccineCertificateTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["25-form-for-medical-fitness-certificate-format"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <FitnessCertificateTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["26-form-death-certificate"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <DeathCertificateTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["35-form-airport-bohw-ht-front"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <AirportBohwHtFrontTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["36-form-airport-bohw-ht-back"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <AirportBohwHtBackTemplate hideActions={true} patient={pdfPatient} />
             </div>
           )}
         </div>

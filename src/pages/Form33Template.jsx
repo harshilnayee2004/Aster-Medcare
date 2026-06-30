@@ -193,7 +193,15 @@ export default function Form33Template({ hideActions = false, patient: propPatie
               <span className="border-b border-black text-center min-w-[35px] pb-0.5">{docMinute}</span>
               <span className="border-b border-black text-center min-w-[40px] pb-0.5">{docAmpm}</span>
             </div>
-            <div className="pt-4 font-semibold">Signature of the Factory Medical Officer</div>
+            <div className="flex flex-col items-center justify-end h-[50px] relative">
+              <img 
+                src={`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/forms/doctor-signature`} 
+                alt="Doctor Signature" 
+                className="h-12 object-contain absolute bottom-0 right-[40px]" 
+                onError={(e) => { e.target.style.display = 'none'; }} 
+              />
+            </div>
+            <div className="pt-1 font-semibold">Signature of the Factory Medical Officer</div>
             <div className="text-xs text-slate-500">Stamp of factory Medical Officer</div>
           </div>
         </div>

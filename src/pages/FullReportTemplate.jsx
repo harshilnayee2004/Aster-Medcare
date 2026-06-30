@@ -7,12 +7,37 @@ import EyeExamTemplate from "./EyeExamTemplate.jsx";
 import Form33Template from "./Form33Template.jsx";
 import PostMedicalTemplate from "./PostMedicalTemplate.jsx";
 import XRayReportTemplate from "./XRayReportTemplate.jsx";
+import AirportBohwTemplate from "./AirportBohwTemplate.jsx";
+import HeightPassTemplate from "./HeightPassTemplate.jsx";
+import OphthalForm6Template from "./OphthalForm6Template.jsx";
+import AudiometryFrontTemplate from "./AudiometryFrontTemplate.jsx";
+import VaccineCertificateTemplate from "./VaccineCertificateTemplate.jsx";
+import FitnessCertificateTemplate from "./FitnessCertificateTemplate.jsx";
+import DeathCertificateTemplate from "./DeathCertificateTemplate.jsx";
+import AirportBohwHtFrontTemplate from "./AirportBohwHtFrontTemplate.jsx";
+import AirportBohwHtBackTemplate from "./AirportBohwHtBackTemplate.jsx";
+import FoodHandlerTemplate from "./FoodHandlerTemplate.jsx";
+import VaccinationFrontTemplate from "./VaccinationFrontTemplate.jsx";
+import VaccinationBackTemplate from "./VaccinationBackTemplate.jsx";
 
 export default function FullReportTemplate() {
   const { patientId } = useParams();
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [printingReady, setPrintingReady] = useState(false);
+
+  useEffect(() => {
+    if (loading || !patient) return;
+    const checkInterval = setInterval(() => {
+      const text = document.body.innerText || "";
+      const isStillLoading = text.includes("Rendering page") || 
+                             text.includes("Stamping data") || 
+                             text.includes("Loading");
+      setPrintingReady(!isStillLoading);
+    }, 400);
+    return () => clearInterval(checkInterval);
+  }, [loading, patient]);
 
   useEffect(() => {
     async function loadData() {
@@ -42,6 +67,17 @@ export default function FullReportTemplate() {
     forms.form33?.savedAt,
     forms.postMedical?.savedAt,
     forms.xrayReport?.savedAt,
+    forms["4-form-airport-bohw"]?.savedAt,
+    forms["5-form-height-pass"]?.savedAt,
+    forms["10-form-ophthal-form-6"]?.savedAt,
+    forms["11-form-audiometry-front"]?.savedAt,
+    forms["15-form-vaccination-front"]?.savedAt,
+    forms["17-form-food-handler-certificate"]?.savedAt,
+    forms["18-form-vaccine-ircs-forms-2"]?.savedAt,
+    forms["25-form-for-medical-fitness-certificate-format"]?.savedAt,
+    forms["26-form-death-certificate"]?.savedAt,
+    forms["35-form-airport-bohw-ht-front"]?.savedAt,
+    forms["36-form-airport-bohw-ht-back"]?.savedAt,
   ].filter(Boolean).length;
 
   function copyShareLink() {
@@ -79,7 +115,7 @@ export default function FullReportTemplate() {
             &larr; Back to Dashboard
           </Link>
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            {completedCount} of 6 Reports Compiled
+            {completedCount} of 17 Reports Compiled
           </span>
         </div>
         <div className="flex gap-2">
@@ -90,8 +126,18 @@ export default function FullReportTemplate() {
           >
             {copied ? "Link Copied! ✓" : "Copy Share Link"}
           </button>
-          <button onClick={handlePrint} className="button-primary !h-10 px-4 flex items-center justify-center">
-            Print / Save PDF
+          <button 
+            disabled={!printingReady} 
+            onClick={handlePrint} 
+            className={`button-primary !h-10 px-4 flex items-center justify-center gap-1.5 transition ${!printingReady ? "opacity-55 cursor-not-allowed bg-slate-400 hover:bg-slate-400" : ""}`}
+          >
+            {!printingReady && (
+              <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            )}
+            {printingReady ? "Print / Save PDF" : "Preparing Report..."}
           </button>
         </div>
       </div>
@@ -131,6 +177,66 @@ export default function FullReportTemplate() {
             {forms.xrayReport?.savedAt && (
               <div className="page-break">
                 <XRayReportTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["4-form-airport-bohw"]?.savedAt && (
+              <div className="page-break">
+                <AirportBohwTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["5-form-height-pass"]?.savedAt && (
+              <div className="page-break">
+                <HeightPassTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["10-form-ophthal-form-6"]?.savedAt && (
+              <div className="page-break">
+                <OphthalForm6Template hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["11-form-audiometry-front"]?.savedAt && (
+              <div className="page-break">
+                <AudiometryFrontTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["15-form-vaccination-front"]?.savedAt && (
+              <div className="page-break">
+                <VaccinationFrontTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["16-form-vaccination-back"]?.savedAt && (
+              <div className="page-break">
+                <VaccinationBackTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["17-form-food-handler-certificate"]?.savedAt && (
+              <div className="page-break">
+                <FoodHandlerTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["18-form-vaccine-ircs-forms-2"]?.savedAt && (
+              <div className="page-break">
+                <VaccineCertificateTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["25-form-for-medical-fitness-certificate-format"]?.savedAt && (
+              <div className="page-break">
+                <FitnessCertificateTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["26-form-death-certificate"]?.savedAt && (
+              <div className="page-break">
+                <DeathCertificateTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["35-form-airport-bohw-ht-front"]?.savedAt && (
+              <div className="page-break">
+                <AirportBohwHtFrontTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["36-form-airport-bohw-ht-back"]?.savedAt && (
+              <div className="page-break">
+                <AirportBohwHtBackTemplate hideActions={true} patient={patient} />
               </div>
             )}
           </>

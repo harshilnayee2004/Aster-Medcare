@@ -77,6 +77,18 @@ export default function Dashboard() {
     forms.eyeExam?.savedAt && ["Eye examination completed", forms.eyeExam.savedAt],
     forms.healthRegister?.savedAt && ["Health Register completed", forms.healthRegister.savedAt],
     forms.xrayReport?.savedAt && ["X-Ray Report completed", forms.xrayReport.savedAt],
+    forms["4-form-airport-bohw"]?.savedAt && ["Form No. XI (Factory & BOCW) completed", forms["4-form-airport-bohw"].savedAt],
+    forms["5-form-height-pass"]?.savedAt && ["Height Pass Test Report completed", forms["5-form-height-pass"].savedAt],
+    forms["10-form-ophthal-form-6"]?.savedAt && ["Ophthalmic Form 6 completed", forms["10-form-ophthal-form-6"].savedAt],
+    forms["11-form-audiometry-front"]?.savedAt && ["Audiometry Report (Front) completed", forms["11-form-audiometry-front"].savedAt],
+    forms["18-form-vaccine-ircs-forms-2"]?.savedAt && ["Vaccination Certificate completed", forms["18-form-vaccine-ircs-forms-2"].savedAt],
+    forms["25-form-for-medical-fitness-certificate-format"]?.savedAt && ["Medical Fitness Certificate completed", forms["25-form-for-medical-fitness-certificate-format"].savedAt],
+    forms["26-form-death-certificate"]?.savedAt && ["Death Certificate completed", forms["26-form-death-certificate"].savedAt],
+    forms["35-form-airport-bohw-ht-front"]?.savedAt && ["Airport BOHW-HT Front completed", forms["35-form-airport-bohw-ht-front"].savedAt],
+    forms["36-form-airport-bohw-ht-back"]?.savedAt && ["Airport BOHW-HT Back completed", forms["36-form-airport-bohw-ht-back"].savedAt],
+    forms["17-form-food-handler-certificate"]?.savedAt && ["Food Handler Certificate completed", forms["17-form-food-handler-certificate"].savedAt],
+    forms["15-form-vaccination-front"]?.savedAt && ["Vaccination Front completed", forms["15-form-vaccination-front"].savedAt],
+    forms["16-form-vaccination-back"]?.savedAt && ["Vaccination Back completed", forms["16-form-vaccination-back"].savedAt],
     ["Patient registered", patient.createdAt],
   ].filter((item) => item && item[1]);
 
@@ -85,7 +97,19 @@ export default function Dashboard() {
     forms.eyeExam?.savedAt,
     forms.form33?.savedAt,
     forms.postMedical?.savedAt,
-    forms.xrayReport?.savedAt
+    forms.xrayReport?.savedAt,
+    forms["4-form-airport-bohw"]?.savedAt,
+    forms["5-form-height-pass"]?.savedAt,
+    forms["10-form-ophthal-form-6"]?.savedAt,
+    forms["11-form-audiometry-front"]?.savedAt,
+    forms["18-form-vaccine-ircs-forms-2"]?.savedAt,
+    forms["25-form-for-medical-fitness-certificate-format"]?.savedAt,
+    forms["26-form-death-certificate"]?.savedAt,
+    forms["35-form-airport-bohw-ht-front"]?.savedAt,
+    forms["36-form-airport-bohw-ht-back"]?.savedAt,
+    forms["17-form-food-handler-certificate"]?.savedAt,
+    forms["15-form-vaccination-front"]?.savedAt,
+    forms["16-form-vaccination-back"]?.savedAt
   ].filter(Boolean).length;
 
   const handleSaveReview = async (e) => {
@@ -188,7 +212,7 @@ export default function Dashboard() {
             <div className="mt-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
               <span>Progress:</span>
               <span className="text-white">
-                {completedCount} of 5 forms completed
+                {completedCount} of 17 forms completed
               </span>
             </div>
           </div>
@@ -257,6 +281,102 @@ export default function Dashboard() {
               savedAt={forms.xrayReport?.savedAt}
               to={`/patients/${patientId}/xray-report`}
               disabled={!hasAccess("xrayReport")}
+            />
+            <FormCard
+              title="Form No. XI (Factory & BOCW)"
+              icon="XI"
+              status={forms["4-form-airport-bohw"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["4-form-airport-bohw"]?.savedAt}
+              to={`/patients/${patientId}/airport-bohw`}
+              disabled={!hasAccess("4-form-airport-bohw")}
+            />
+            <FormCard
+              title="Height Pass Test Report"
+              icon="HP"
+              status={forms["5-form-height-pass"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["5-form-height-pass"]?.savedAt}
+              to={`/patients/${patientId}/height-pass`}
+              disabled={!hasAccess("5-form-height-pass")}
+            />
+            <FormCard
+              title="Ophthalmic Form 6"
+              icon="OP"
+              status={forms["10-form-ophthal-form-6"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["10-form-ophthal-form-6"]?.savedAt}
+              to={`/patients/${patientId}/ophthal-form-6`}
+              disabled={!hasAccess("10-form-ophthal-form-6")}
+            />
+            <FormCard
+              title="Audiometry Report (Front)"
+              icon="AD"
+              status={forms["11-form-audiometry-front"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["11-form-audiometry-front"]?.savedAt}
+              to={`/patients/${patientId}/audiometry-front`}
+              disabled={!hasAccess("11-form-audiometry-front")}
+            />
+            <FormCard
+              title="Vaccination Certificate"
+              icon="VC"
+              status={forms["18-form-vaccine-ircs-forms-2"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["18-form-vaccine-ircs-forms-2"]?.savedAt}
+              to={`/patients/${patientId}/vaccine-certificate`}
+              disabled={!hasAccess("18-form-vaccine-ircs-forms-2")}
+            />
+            <FormCard
+              title="Medical Fitness Certificate"
+              icon="FC"
+              status={forms["25-form-for-medical-fitness-certificate-format"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["25-form-for-medical-fitness-certificate-format"]?.savedAt}
+              to={`/patients/${patientId}/fitness-certificate`}
+              disabled={!hasAccess("25-form-for-medical-fitness-certificate-format")}
+            />
+            <FormCard
+              title="Death Certificate"
+              icon="DC"
+              status={forms["26-form-death-certificate"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["26-form-death-certificate"]?.savedAt}
+              to={`/patients/${patientId}/death-certificate`}
+              disabled={!hasAccess("26-form-death-certificate")}
+            />
+            <FormCard
+              title="Airport BOHW-HT Front"
+              icon="AP"
+              status={forms["35-form-airport-bohw-ht-front"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["35-form-airport-bohw-ht-front"]?.savedAt}
+              to={`/patients/${patientId}/airport-bohw-ht-front`}
+              disabled={!hasAccess("35-form-airport-bohw-ht-front")}
+            />
+            <FormCard
+              title="Airport BOHW-HT Back"
+              icon="AB"
+              status={forms["36-form-airport-bohw-ht-back"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["36-form-airport-bohw-ht-back"]?.savedAt}
+              to={`/patients/${patientId}/airport-bohw-ht-back`}
+              disabled={!hasAccess("36-form-airport-bohw-ht-back")}
+            />
+            <FormCard
+              title="Food Handler Certificate"
+              icon="FH"
+              status={forms["17-form-food-handler-certificate"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["17-form-food-handler-certificate"]?.savedAt}
+              to={`/patients/${patientId}/food-handler`}
+              disabled={!hasAccess("17-form-food-handler-certificate")}
+            />
+            <FormCard
+              title="Vaccination Front"
+              icon="VF"
+              status={forms["15-form-vaccination-front"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["15-form-vaccination-front"]?.savedAt}
+              to={`/patients/${patientId}/vaccination-front`}
+              disabled={!hasAccess("15-form-vaccination-front")}
+            />
+            <FormCard
+              title="Vaccination Back"
+              icon="VB"
+              status={forms["16-form-vaccination-back"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["16-form-vaccination-back"]?.savedAt}
+              to={`/patients/${patientId}/vaccination-back`}
+              disabled={!hasAccess("16-form-vaccination-back")}
             />
           </div>
         </section>

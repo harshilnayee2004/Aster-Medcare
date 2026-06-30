@@ -3,42 +3,31 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { getPatient } from "../utils/localStorage.js";
 import api from "../services/api";
 
-function dateParts(value) {
-  if (!value) return ["", "", ""];
-  const parts = value.split("-");
+function formatDateToDMY(val) {
+  if (!val) return "";
+  const parts = val.split("-"); // YYYY-MM-DD
   if (parts.length === 3) {
-    return [parts[2], parts[1], parts[0]];
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
   }
-  return ["", "", ""];
+  return val;
 }
 
-function datetimeParts(value) {
-  if (!value) return ["", "", "", "", "", ""];
-  const d = new Date(value);
-  if (isNaN(d.getTime())) return ["", "", "", "", "", ""];
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = String(d.getFullYear());
-  let hours = d.getHours();
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  const hourStr = String(hours).padStart(2, '0');
-  return [day, month, year, hourStr, minutes, ampm];
-}
-
-function calculateAge(dobString) {
-  if (!dobString) return "";
-  const dob = new Date(dobString);
-  if (isNaN(dob.getTime())) return "";
-  const today = new Date();
-  let age = today.getFullYear() - dob.getFullYear();
-  const m = today.getMonth() - dob.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-    age--;
+function formatFooterDateTime(dateStr, timeStr) {
+  if (!dateStr) return "";
+  const dateFormatted = formatDateToDMY(dateStr);
+  if (!timeStr) return dateFormatted;
+  
+  // Format timeStr ("20:57") to "08:57 PM"
+  try {
+    const [hourStr, minStr] = timeStr.split(":");
+    const hour = parseInt(hourStr, 10);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const hour12 = hour % 12 || 12;
+    const hourPadded = String(hour12).padStart(2, "0");
+    return `${dateFormatted}. ${hourPadded}:${minStr}${ampm}`;
+  } catch {
+    return dateFormatted;
   }
-  return String(age);
 }
 
 function PdfPage({ pdfUrl, pageNum }) {
@@ -96,7 +85,7 @@ function PdfPage({ pdfUrl, pageNum }) {
   );
 }
 
-export default function PreMedicalTemplate({ hideActions = false, patient: propPatient }) {
+export default function VaccinationBackTemplate({ hideActions = false, patient: propPatient }) {
   const { patientId } = useParams();
   const [patient, setPatient] = useState(propPatient || null);
   const [loading, setLoading] = useState(!propPatient);
@@ -132,86 +121,49 @@ export default function PreMedicalTemplate({ hideActions = false, patient: propP
       try {
         setLoadingPdf(true);
         const forms = patient.forms || {};
-        const actualForm = forms.preMedical?.data || {};
-
-        // Parse date and time separately
-        const [day, month, year, hourStr, minutes, ampm] = datetimeParts(actualForm.dateTime || "");
-        const dateStr = day ? `${day}/${month}/${year}` : "";
-        const timeStr = hourStr ? `${hourStr}:${minutes} ${ampm}` : "";
-
-        // Format DOB cleanly as DD/MM/YYYY
-        const [dobDay, dobMonth, dobYear] = dateParts(actualForm.dob || patient.dob || "");
-        const dobStr = dobDay ? `${dobDay}/${dobMonth}/${dobYear}` : "";
-        
-        // Calculate age automatically from DOB, or fallback to saved age
-        const computedAge = calculateAge(actualForm.dob || patient.dob || "") || String(actualForm.age || patient.age || "");
+        const actualForm = forms["16-form-vaccination-back"]?.data || {};
 
         // Stamping mapping
         const values = {
-          collectedBy: actualForm.collectedBy || "",
-          formNo: actualForm.formNo || "",
-          date: dateStr,
-          time: timeStr,
-          name: actualForm.name || patient.name || "",
-          address: actualForm.address || patient.address || "",
-          city: actualForm.city || "",
-          state: actualForm.state || "",
-          pinNo: actualForm.pinNo || "",
-          emailId: actualForm.emailId || "",
-          phoneNo: actualForm.phoneNo || patient.mobile || "",
-          gender: actualForm.gender || patient.gender || "",
-          dob: dobStr,
-          age: computedAge,
-          govtIdProof: actualForm.govtIdProof || "",
-          govtIdProofNo: actualForm.govtIdProofNo || "",
-          occupation: actualForm.occupation || "",
-          occupationName: actualForm.occupationName || "",
-          occupationId: actualForm.occupationId || "",
-          bloodGroup: actualForm.bloodGroup || "",
-          post: actualForm.post || "",
+          dataCollectedBy: actualForm.dataCollectedBy || "",
+          vaccineBrandName: actualForm.vaccineBrandName || "",
+          site: actualForm.site || "",
+          route: actualForm.route || "",
+          dose: actualForm.dose || "",
+          batchNumber: actualForm.batchNumber || "",
+          givenOn: formatDateToDMY(actualForm.givenOn || ""),
+          manufacturer: actualForm.manufacturer || "",
+          expiryDate: formatDateToDMY(actualForm.expiryDate || ""),
+          dueOn: formatDateToDMY(actualForm.dueOn || ""),
+          nextDoseDate: formatDateToDMY(actualForm.nextDoseDate || ""),
+          diluentBatchNumber: actualForm.diluentBatchNumber || "",
+          diluentExpiryDate: formatDateToDMY(actualForm.diluentExpiryDate || ""),
+          vaccineSticker: actualForm.vaccineSticker || "",
           
-          // Diseases
-          asthma: actualForm.asthma || "NO",
-          tb: actualForm.tb || "NO",
-          fits: actualForm.fits || "NO",
-          mental: actualForm.mental || "NO",
-          eyeDisease: actualForm.eyeDisease || "NO",
-          heartDisease: actualForm.heartDisease || "NO",
-          skinDisease: actualForm.skinDisease || "NO",
-          injuryFracture: actualForm.injuryFracture || "NO",
-          surgery: actualForm.surgery || "NO",
-          infectiousDisease: actualForm.infectiousDisease || "NO",
+          // Certificate mapping
+          certPatientName: actualForm.certPatientName || patient.name || "",
+          certVaccineName: actualForm.certVaccineName || actualForm.vaccineBrandName || "",
+          certVaccinationDate: formatDateToDMY(actualForm.certVaccinationDate || actualForm.givenOn || ""),
+          certDateTime: formatFooterDateTime(actualForm.certDate || actualForm.givenOn || "", actualForm.certTime || ""),
           
-          // Personal Details
-          diet: actualForm.diet || "",
-          allergy: actualForm.allergy || "NO",
-          addiction: actualForm.addiction || "NO",
-          addictionQty: actualForm.addictionQty || "",
-          otherIllness: actualForm.otherIllness || "NO",
-          familyBp: actualForm.familyBp ? "YES" : "NO",
-          familyDiabetes: actualForm.familyDiabetes ? "YES" : "NO",
-          familyHeart: actualForm.familyHeart ? "YES" : "NO",
-          familyCancer: actualForm.familyCancer ? "YES" : "NO",
-          
-          identificationMark: actualForm.identificationMark || "",
-          otherDetails: actualForm.otherDetails || "NA",
-          signature: patient.signature || "",
-          verifiedBy: actualForm.verifiedBy || "",
-          verifiedDateTime: actualForm.verifiedDateTime || ""
+          // Signatures & image uploads
+          patientSignature: patient.signature || "",
+          guardianSignature: patient.age < 18 ? (patient.signature || "") : "",
+          vaccineImage: actualForm.vaccineImage || ""
         };
 
-        const response = await api.post(`/forms/fill/1-form-personal-details`, { values }, {
+        const response = await api.post(`/forms/fill/16-form-vaccination-back`, { values }, {
           responseType: "blob"
         });
 
-        const outputFilename = `filled_1_FORM_Personal_Details_${patient.patientId}.pdf`;
+        const outputFilename = `filled_Vaccination_Back_${patient.patientId}.pdf`;
 
         const blob = new Blob([response.data], { type: "application/pdf" });
         const url = window.URL.createObjectURL(blob);
         setPdfUrl(url);
         setDownloadFilename(outputFilename);
       } catch (err) {
-        console.error("Failed to generate Pre-Medical PDF:", err);
+        console.error("Failed to generate Vaccination Back PDF:", err);
       } finally {
         setLoadingPdf(false);
       }
@@ -285,7 +237,7 @@ export default function PreMedicalTemplate({ hideActions = false, patient: propP
   };
 
   if (loading) {
-    return <div className="text-center py-20 text-slate-500 font-semibold">Loading Pre Medical Report...</div>;
+    return <div className="text-center py-20 text-slate-500 font-semibold">Loading Report...</div>;
   }
 
   if (!patient) return <Navigate to="/patients" replace />;
@@ -294,7 +246,7 @@ export default function PreMedicalTemplate({ hideActions = false, patient: propP
     <main className={hideActions ? "" : "template-screen"}>
       {!hideActions && (
         <div className="template-actions print:hidden">
-          <Link to={`/patients/${patientId}/pre-medical`} className="button-secondary">Back to Form</Link>
+          <Link to={`/patients/${patientId}/vaccination-back`} className="button-secondary">Back to Form</Link>
           <button onClick={handleDownload} className="button-secondary bg-white text-slate-700 hover:text-brand">Download PDF</button>
           <button onClick={handlePrint} className="button-primary">Print PDF</button>
         </div>
@@ -309,7 +261,7 @@ export default function PreMedicalTemplate({ hideActions = false, patient: propP
           {hideActions && (
             <div data-html2canvas-ignore="true" className="flex items-center justify-between border-b border-line pb-3 print:hidden">
               <h3 className="text-sm font-bold text-slate-800">
-                Pre-Medical PDF Document (Stamped)
+                Vaccination Back PDF Document (Stamped)
               </h3>
               <button
                 onClick={handleDownload}
@@ -328,7 +280,7 @@ export default function PreMedicalTemplate({ hideActions = false, patient: propP
         </div>
       ) : (
         <div className="max-w-[800px] mx-auto bg-red-50 p-12 border border-red-200 text-red-700 rounded-xl text-center font-medium print:hidden">
-          Failed to load Pre-Medical PDF template. Please check configuration.
+          Failed to load PDF template.
         </div>
       )}
     </main>

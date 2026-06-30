@@ -17,6 +17,30 @@ import PreMedicalTemplate from "./pages/PreMedicalTemplate.jsx";
 import XRayReportForm from "./pages/XRayReportForm.jsx";
 import XRayReportTemplate from "./pages/XRayReportTemplate.jsx";
 import FullReportTemplate from "./pages/FullReportTemplate.jsx";
+import AirportBohwForm from "./pages/AirportBohwForm.jsx";
+import AirportBohwTemplate from "./pages/AirportBohwTemplate.jsx";
+import AirportBohwHtFrontForm from "./pages/AirportBohwHtFrontForm.jsx";
+import AirportBohwHtFrontTemplate from "./pages/AirportBohwHtFrontTemplate.jsx";
+import AirportBohwHtBackForm from "./pages/AirportBohwHtBackForm.jsx";
+import AirportBohwHtBackTemplate from "./pages/AirportBohwHtBackTemplate.jsx";
+import FoodHandlerForm from "./pages/FoodHandlerForm.jsx";
+import FoodHandlerTemplate from "./pages/FoodHandlerTemplate.jsx";
+import VaccinationFrontForm from "./pages/VaccinationFrontForm.jsx";
+import VaccinationFrontTemplate from "./pages/VaccinationFrontTemplate.jsx";
+import VaccinationBackForm from "./pages/VaccinationBackForm.jsx";
+import VaccinationBackTemplate from "./pages/VaccinationBackTemplate.jsx";
+import HeightPassForm from "./pages/HeightPassForm.jsx";
+import HeightPassTemplate from "./pages/HeightPassTemplate.jsx";
+import OphthalForm6Form from "./pages/OphthalForm6Form.jsx";
+import OphthalForm6Template from "./pages/OphthalForm6Template.jsx";
+import AudiometryFrontForm from "./pages/AudiometryFrontForm.jsx";
+import AudiometryFrontTemplate from "./pages/AudiometryFrontTemplate.jsx";
+import VaccineCertificateForm from "./pages/VaccineCertificateForm.jsx";
+import VaccineCertificateTemplate from "./pages/VaccineCertificateTemplate.jsx";
+import FitnessCertificateForm from "./pages/FitnessCertificateForm.jsx";
+import FitnessCertificateTemplate from "./pages/FitnessCertificateTemplate.jsx";
+import DeathCertificateForm from "./pages/DeathCertificateForm.jsx";
+import DeathCertificateTemplate from "./pages/DeathCertificateTemplate.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import Analytics from "./pages/Analytics.jsx";
 import BulkImport from "./pages/BulkImport.jsx";
@@ -200,6 +224,150 @@ export default function App() {
       <Route path="/patients/:patientId/xray-report/preview" element={
         <FormProtectedRoute formKey="xrayReport">
           <XRayReportTemplate />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/airport-bohw" element={
+        <FormProtectedRoute formKey="4-form-airport-bohw">
+          <AirportBohwForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/airport-bohw/preview" element={
+        <FormProtectedRoute formKey="4-form-airport-bohw">
+          <AirportBohwTemplate />
+        </FormProtectedRoute>
+      } />
+
+      <Route path="/patients/:patientId/height-pass" element={
+        <FormProtectedRoute formKey="5-form-height-pass">
+          <HeightPassForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/height-pass/preview" element={
+        <FormProtectedRoute formKey="5-form-height-pass">
+          <HeightPassTemplate />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/airport-bohw-ht-front" element={
+        <FormProtectedRoute formKey="35-form-airport-bohw-ht-front">
+          <AirportBohwHtFrontForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/airport-bohw-ht-front/preview" element={
+        <FormProtectedRoute formKey="35-form-airport-bohw-ht-front">
+          <AirportBohwHtFrontTemplate />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/airport-bohw-ht-back" element={
+        <FormProtectedRoute formKey="36-form-airport-bohw-ht-back">
+          <AirportBohwHtBackForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/airport-bohw-ht-back/preview" element={
+        <FormProtectedRoute formKey="36-form-airport-bohw-ht-back">
+          <AirportBohwHtBackTemplate />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/food-handler" element={
+        <FormProtectedRoute formKey="17-form-food-handler-certificate">
+          <FoodHandlerForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/food-handler/preview" element={
+        <FormProtectedRoute formKey="17-form-food-handler-certificate">
+          <FoodHandlerTemplate />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/vaccination-front" element={
+        <FormProtectedRoute formKey="15-form-vaccination-front">
+          <VaccinationFrontForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/vaccination-front/preview" element={
+        <FormProtectedRoute formKey="15-form-vaccination-front">
+          <VaccinationFrontTemplate />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/vaccination-back" element={
+        <FormProtectedRoute formKey="16-form-vaccination-back">
+          <VaccinationBackForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/vaccination-back/preview" element={
+        <FormProtectedRoute formKey="16-form-vaccination-back">
+          <VaccinationBackTemplate />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/ophthal-form-6" element={
+        <FormProtectedRoute formKey="10-form-ophthal-form-6">
+          <OphthalForm6Form />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/ophthal-form-6/preview" element={
+        <FormProtectedRoute formKey="10-form-ophthal-form-6">
+          <OphthalForm6Template />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/audiometry-front" element={
+        <FormProtectedRoute formKey="11-form-audiometry-front">
+          <AudiometryFrontForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/audiometry-front/preview" element={
+        <FormProtectedRoute formKey="11-form-audiometry-front">
+          <AudiometryFrontTemplate />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/vaccine-certificate" element={
+        <FormProtectedRoute formKey="18-form-vaccine-ircs-forms-2">
+          <VaccineCertificateForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/vaccine-certificate/preview" element={
+        <FormProtectedRoute formKey="18-form-vaccine-ircs-forms-2">
+          <VaccineCertificateTemplate />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/fitness-certificate" element={
+        <FormProtectedRoute formKey="25-form-for-medical-fitness-certificate-format">
+          <FitnessCertificateForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/fitness-certificate/preview" element={
+        <FormProtectedRoute formKey="25-form-for-medical-fitness-certificate-format">
+          <FitnessCertificateTemplate />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/death-certificate" element={
+        <FormProtectedRoute formKey="26-form-death-certificate">
+          <DeathCertificateForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/death-certificate/preview" element={
+        <FormProtectedRoute formKey="26-form-death-certificate">
+          <DeathCertificateTemplate />
         </FormProtectedRoute>
       } />
       
