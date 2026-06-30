@@ -89,6 +89,7 @@ export default function Dashboard() {
     forms["17-form-food-handler-certificate"]?.savedAt && ["Food Handler Certificate completed", forms["17-form-food-handler-certificate"].savedAt],
     forms["15-form-vaccination-front"]?.savedAt && ["Vaccination Front completed", forms["15-form-vaccination-front"].savedAt],
     forms["16-form-vaccination-back"]?.savedAt && ["Vaccination Back completed", forms["16-form-vaccination-back"].savedAt],
+    forms["13-form-pft-front"]?.savedAt && ["PFT Front completed", forms["13-form-pft-front"].savedAt],
     ["Patient registered", patient.createdAt],
   ].filter((item) => item && item[1]);
 
@@ -109,7 +110,8 @@ export default function Dashboard() {
     forms["36-form-airport-bohw-ht-back"]?.savedAt,
     forms["17-form-food-handler-certificate"]?.savedAt,
     forms["15-form-vaccination-front"]?.savedAt,
-    forms["16-form-vaccination-back"]?.savedAt
+    forms["16-form-vaccination-back"]?.savedAt,
+    forms["13-form-pft-front"]?.savedAt
   ].filter(Boolean).length;
 
   const handleSaveReview = async (e) => {
@@ -212,7 +214,7 @@ export default function Dashboard() {
             <div className="mt-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
               <span>Progress:</span>
               <span className="text-white">
-                {completedCount} of 17 forms completed
+                {completedCount} of 18 forms completed
               </span>
             </div>
           </div>
@@ -377,6 +379,14 @@ export default function Dashboard() {
               savedAt={forms["16-form-vaccination-back"]?.savedAt}
               to={`/patients/${patientId}/vaccination-back`}
               disabled={!hasAccess("16-form-vaccination-back")}
+            />
+            <FormCard
+              title="PFT Front"
+              icon="PF"
+              status={forms["13-form-pft-front"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["13-form-pft-front"]?.savedAt}
+              to={`/patients/${patientId}/pft-front`}
+              disabled={!hasAccess("13-form-pft-front")}
             />
           </div>
         </section>

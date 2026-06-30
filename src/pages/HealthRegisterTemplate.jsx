@@ -1,15 +1,80 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { formatDate, getPatient } from "../utils/localStorage.js";
+import { getPatient } from "../utils/localStorage.js";
+import api from "../services/api";
 
-function displayDate(value) {
-  return value ? formatDate(value) : "";
+function formatDateToDMY(val) {
+  if (!val) return "";
+  const parts = val.split("-"); // YYYY-MM-DD
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return val;
+}
+
+function PdfPage({ pdfUrl, pageNum }) {
+  const canvasRef = useRef(null);
+  const [rendering, setRendering] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    async function renderPage() {
+      try {
+        const pdfjsLib = window.pdfjsLib;
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        const pdf = await loadingTask.promise;
+        const page = await pdf.getPage(pageNum);
+        
+        if (!active) return;
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const context = canvas.getContext("2d");
+        
+        // Scale to 2.5 for high-resolution print quality
+        const viewport = page.getViewport({ scale: 2.5 });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+        await page.render(renderContext).promise;
+        setRendering(false);
+      } catch (err) {
+        console.error(`Failed to render page ${pageNum}:`, err);
+      }
+    }
+    
+    if (window.pdfjsLib) {
+      renderPage();
+    }
+    
+    return () => {
+      active = false;
+    };
+  }, [pdfUrl, pageNum]);
+
+  return (
+    <div className="relative border border-line rounded-lg overflow-hidden bg-white shadow-sm mb-4 last:mb-0 print:border-none print:rounded-none print:shadow-none print:m-0">
+      {rendering && (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-50 text-slate-400 text-xs font-semibold animate-pulse print:hidden">
+          Rendering page {pageNum}...
+        </div>
+      )}
+      <canvas ref={canvasRef} className="w-full h-auto block" />
+    </div>
+  );
 }
 
 export default function HealthRegisterTemplate({ hideActions = false, patient: propPatient }) {
   const { patientId } = useParams();
   const [patient, setPatient] = useState(propPatient || null);
   const [loading, setLoading] = useState(!propPatient);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [loadingPdf, setLoadingPdf] = useState(true);
+  const [downloadFilename, setDownloadFilename] = useState("");
+  const [pages, setPages] = useState([]);
 
   useEffect(() => {
     if (propPatient) {
@@ -31,188 +96,177 @@ export default function HealthRegisterTemplate({ hideActions = false, patient: p
     loadData();
   }, [patientId, propPatient]);
 
+  useEffect(() => {
+    if (!patient) return;
+
+    async function fetchPdf() {
+      try {
+        setLoadingPdf(true);
+        const forms = patient.forms || {};
+        const actualForm = forms.healthRegister?.data || {};
+
+        // Parse signature date
+        let formattedDoctorDate = "";
+        if (actualForm.doctorSignatureDate) {
+          formattedDoctorDate = formatDateToDMY(actualForm.doctorSignatureDate.split("T")[0]);
+        }
+
+        const values = {
+          serialNumber: actualForm.serialNumber || "",
+          workerName: actualForm.name || patient.name || "",
+          gender: actualForm.sex || patient.gender || "",
+          dob: formatDateToDMY(actualForm.dateOfBirth || patient.dob || ""),
+          department: actualForm.departmentWorks || "",
+          hazardousProcess: actualForm.hazardousProcessName || "",
+          dangerousProcess: actualForm.dangerousOperation || "",
+          natureOfJob: actualForm.jobNature || "",
+          materialsExposed: actualForm.rawMaterialsExposed || "",
+          dateOfPosting: formatDateToDMY(actualForm.dateOfPosting || ""),
+          dateOfLeaving: formatDateToDMY(actualForm.dateOfLeaving || ""),
+          reasonForLeaving: actualForm.reasonsForLeaving || "",
+          examDate: formatDateToDMY(actualForm.examinationDate || ""),
+          signsSymptoms: actualForm.signsSymptoms || "",
+          natureOfTests: actualForm.natureOfTests || "",
+          result: String(actualForm.result || "FIT").toUpperCase(),
+          temporaryWithdrawal: actualForm.result === "UNFIT" ? (actualForm.withdrawalPeriod || "") : "",
+          reasonForWithdrawal: actualForm.result === "UNFIT" ? (actualForm.withdrawalReason || "") : "",
+          dateDeclaredUnfit: actualForm.result === "UNFIT" ? formatDateToDMY(actualForm.dateDeclaredUnfit || "") : "",
+          dateOfFitnessCertificate: formatDateToDMY(actualForm.dateFitnessCertificateIssued || ""),
+          doctorSignature: patient.signature || "",
+          doctorSignatureDate: formattedDoctorDate
+        };
+
+        const response = await api.post(`/forms/fill/healthRegister`, { values }, {
+          responseType: "blob"
+        });
+
+        const outputFilename = `filled_Health_Register_${patient.patientId}.pdf`;
+
+        const blob = new Blob([response.data], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+        setPdfUrl(url);
+        setDownloadFilename(outputFilename);
+      } catch (err) {
+        console.error("Failed to generate Health Register PDF:", err);
+      } finally {
+        setLoadingPdf(false);
+      }
+    }
+
+    fetchPdf();
+
+    return () => {
+      if (pdfUrl) {
+        window.URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [patient]);
+
+  // Load PDFJS pages dynamically
+  useEffect(() => {
+    if (!pdfUrl) return;
+
+    const scriptId = "pdfjs-cdn-script";
+    let script = document.getElementById(scriptId);
+
+    const loadPdfDoc = async () => {
+      try {
+        const pdfjsLib = window.pdfjsLib;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        const pdf = await loadingTask.promise;
+        
+        const pagesArray = [];
+        for (let i = 1; i <= pdf.numPages; i++) {
+          pagesArray.push(i);
+        }
+        setPages(pagesArray);
+      } catch (err) {
+        console.error("PDFJS document loading failed:", err);
+      }
+    };
+
+    if (!window.pdfjsLib) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+      script.async = true;
+      script.onload = () => {
+        loadPdfDoc();
+      };
+      document.body.appendChild(script);
+    } else {
+      loadPdfDoc();
+    }
+  }, [pdfUrl]);
+
+  const handleDownload = () => {
+    if (!pdfUrl) return;
+    const link = document.createElement("a");
+    link.href = pdfUrl;
+    link.download = downloadFilename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handlePrint = () => {
+    if (pdfUrl) {
+      const printWindow = window.open(pdfUrl);
+      if (printWindow) {
+        printWindow.print();
+      }
+    }
+  };
+
   if (loading) {
-    return <div className="text-center py-20 text-slate-500 font-semibold">Loading Health Register Report...</div>;
+    return <div className="text-center py-20 text-slate-500 font-semibold">Loading Report...</div>;
   }
 
   if (!patient) return <Navigate to="/patients" replace />;
 
-  const forms = patient.forms || {};
-  const form = forms.healthRegister?.data || {};
-  const savedAt = forms.healthRegister?.savedAt;
-
   return (
     <main className={hideActions ? "" : "template-screen"}>
       {!hideActions && (
-        <div className="template-actions">
+        <div className="template-actions print:hidden">
           <Link to={`/patients/${patientId}/health-register`} className="button-secondary">Back to Form</Link>
-          <button onClick={() => window.print()} className="button-primary">Print</button>
+          <button onClick={handleDownload} className="button-secondary bg-white text-slate-700 hover:text-brand">Download PDF</button>
+          <button onClick={handlePrint} className="button-primary">Print PDF</button>
         </div>
       )}
 
-      <div className="form32-page">
-        <div className="form32-hdr">
-          <div className="form32-t1">FORM NO. 32</div>
-          <div className="form32-t2">(Prescribed under Rule 68-T and 102)</div>
-          <div className="form32-t3">Health Register</div>
+      {loadingPdf ? (
+        <div className="max-w-[800px] mx-auto bg-white p-20 rounded-xl border border-line text-center text-slate-400 font-semibold shadow-soft print:hidden">
+          Stamping data onto original PDF template...
         </div>
-
-        <div className="form32-pi">
-          <div className="form32-pr">
-            <span className="form32-lb">1.&nbsp;&nbsp; Serial Number in the Register of adult Workers</span>
-            <span className="form32-vl">&nbsp;:- {form.serialNumber}</span>
-          </div>
-          <div className="form32-pr">
-            <span className="form32-lb">2.&nbsp;&nbsp; Name of Worker</span>
-            <span className="form32-vl">&nbsp;:- {form.name || patient.name}</span>
-          </div>
-          <div className="form32-pr">
-            <span className="form32-lb">3.&nbsp;&nbsp; Sex</span>
-            <span className="form32-vl">&nbsp;:- {form.sex || patient.gender}</span>
-          </div>
-          <div className="form32-pr">
-            <span className="form32-lb">4.&nbsp;&nbsp; Date of birth</span>
-            <span className="form32-vl">&nbsp;:- {displayDate(form.dateOfBirth)}</span>
+      ) : pdfUrl ? (
+        <div className={hideActions ? "mx-auto max-w-[800px] space-y-4" : "mx-auto max-w-[800px] bg-white border border-line rounded-xl shadow-soft p-5 space-y-4"}>
+          {hideActions && (
+            <div data-html2canvas-ignore="true" className="flex items-center justify-between border-b border-line pb-3 print:hidden">
+              <h3 className="text-sm font-bold text-slate-800">
+                Health Register PDF Document (Stamped)
+              </h3>
+              <button
+                onClick={handleDownload}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white h-9 px-4 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition"
+              >
+                Download PDF
+              </button>
+            </div>
+          )}
+          
+          <div className="print:m-0 print:p-0">
+            {pages.map((pageNum) => (
+              <PdfPage key={pageNum} pdfUrl={pdfUrl} pageNum={pageNum} />
+            ))}
           </div>
         </div>
-
-        <table className="form32-table">
-          <colgroup>
-            <col style={{ width: "26px" }} />
-            <col style={{ width: "150px" }} />
-            <col style={{ width: "165px" }} />
-            <col />
-          </colgroup>
-          <tbody>
-            {/* ROW 1 */}
-            <tr>
-              <td className="form32-ctr">1</td>
-              <td>Department Works</td>
-              <td className="form32-bold form32-ctr" colSpan="2">{form.departmentWorks}</td>
-            </tr>
-            {/* ROW 2 */}
-            <tr>
-              <td className="form32-ctr">2</td>
-              <td>Name of Hazardous process</td>
-              <td className="form32-ctr" colSpan="2">{form.hazardousProcessName}</td>
-            </tr>
-            {/* ROW 3 */}
-            <tr>
-              <td className="form32-ctr">3</td>
-              <td>Dangerous process/operation</td>
-              <td className="form32-ctr" colSpan="2">{form.dangerousOperation}</td>
-            </tr>
-            {/* ROW 4 */}
-            <tr>
-              <td className="form32-ctr">4</td>
-              <td>Nature of job or occupation</td>
-              <td className="form32-ctr" colSpan="2">{form.jobNature}</td>
-            </tr>
-            {/* ROW 5 */}
-            <tr>
-              <td className="form32-ctr">5</td>
-              <td>Raw materials, products or By-products likely to be exposed to</td>
-              <td className="form32-ctr" colSpan="2">{form.rawMaterialsExposed}</td>
-            </tr>
-            {/* ROW 6 */}
-            <tr style={{ height: "32px" }}>
-              <td className="form32-ctr">6</td>
-              <td>Date of posting</td>
-              <td colSpan="2" className="form32-ctr">{displayDate(form.dateOfPosting)}</td>
-            </tr>
-            {/* ROW 7 */}
-            <tr style={{ height: "32px" }}>
-              <td className="form32-ctr">7</td>
-              <td>Date of leaving/transfer to or transfer</td>
-              <td colSpan="2" className="form32-ctr">{displayDate(form.dateOfLeaving)}</td>
-            </tr>
-            {/* ROW 8 */}
-            <tr style={{ height: "32px" }}>
-              <td className="form32-ctr">8</td>
-              <td>Reasons for Discharge/ leaving or transfer</td>
-              <td colSpan="2" className="form32-ctr">{form.reasonsForLeaving}</td>
-            </tr>
-
-            {/* ROW 9 */}
-            <tr>
-              <td rowSpan="4" style={{ borderRight: "1px solid #000" }}></td>
-              <td></td>
-              <td>Date</td>
-              <td className="form32-ctr">{displayDate(form.examinationDate || savedAt)}</td>
-            </tr>
-
-            {/* ROW 10 */}
-            <tr style={{ height: "46px" }}>
-              <td className="form32-mid" rowSpan="3">Medical examination</td>
-              <td>Signs and symptoms Observed during examination</td>
-              <td className="form32-ctr">{form.signsSymptoms}</td>
-            </tr>
-
-            {/* ROW 11 */}
-            <tr>
-              <td>Nature of tests</td>
-              <td style={{ fontSize: "9.5px" }}>{form.natureOfTests}</td>
-            </tr>
-
-            {/* ROW 12 */}
-            <tr>
-              <td>Result</td>
-              <td className="form32-ctr form32-bold">{form.result}</td>
-            </tr>
-
-            {/* ROW 13 */}
-            <tr style={{ height: "44px" }}>
-              <td className="form32-ctr">13</td>
-              <td className="form32-ctr form32-mid" rowSpan="4">If declared unfit for Work</td>
-              <td>Period of temporary Withdrawal from that work</td>
-              <td className="form32-ctr">{form.withdrawalPeriod}</td>
-            </tr>
-
-            {/* ROW 14 */}
-            <tr style={{ height: "33px" }}>
-              <td className="form32-ctr">14</td>
-              <td>Reasons for such withdrawal</td>
-              <td className="form32-ctr">{form.withdrawalReason}</td>
-            </tr>
-
-            {/* ROW 15 */}
-            <tr style={{ height: "36px" }}>
-              <td className="form32-ctr">15</td>
-              <td>Date of declaring him/her Unfit for that work</td>
-              <td className="form32-ctr">{displayDate(form.dateDeclaredUnfit)}</td>
-            </tr>
-
-            {/* ROW 16 */}
-            <tr style={{ height: "33px" }}>
-              <td className="form32-ctr">16</td>
-              <td>Date of issuing fitness Certificate</td>
-              <td className="form32-ctr">{displayDate(form.dateFitnessCertificateIssued)}</td>
-            </tr>
-
-            {/* ROW 17 */}
-            <tr style={{ height: "88px" }}>
-              <td className="form32-ctr form32-mid">17</td>
-              <td className="form32-mid">Signature with date of the factory Medical Officer/ the Certifying Surgeon.</td>
-              <td className="form32-ctr form32-bot relative" colSpan="2">
-                <div className="flex flex-col items-center justify-center h-full min-h-[70px]">
-                  <img 
-                    src={`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/forms/doctor-signature`} 
-                    alt="Doctor Signature" 
-                    className="h-12 object-contain" 
-                    onError={(e) => { e.target.style.display = 'none'; }} 
-                  />
-                  <div className="text-[10px] mt-1">{displayDate(form.doctorSignatureDate || savedAt)}</div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div className="form32-note">
-          <p>Note : 1. Separate page should be maintained for individual worker.</p>
-          <p style={{ paddingLeft: "43px" }}>2. Fresh entry should be made for each examination.</p>
+      ) : (
+        <div className="max-w-[800px] mx-auto bg-red-50 p-12 border border-red-200 text-red-700 rounded-xl text-center font-medium print:hidden">
+          Failed to load PDF template.
         </div>
-      </div>
+      )}
     </main>
   );
 }

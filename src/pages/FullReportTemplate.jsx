@@ -19,6 +19,7 @@ import AirportBohwHtBackTemplate from "./AirportBohwHtBackTemplate.jsx";
 import FoodHandlerTemplate from "./FoodHandlerTemplate.jsx";
 import VaccinationFrontTemplate from "./VaccinationFrontTemplate.jsx";
 import VaccinationBackTemplate from "./VaccinationBackTemplate.jsx";
+import PftFrontTemplate from "./PftFrontTemplate.jsx";
 
 export default function FullReportTemplate() {
   const { patientId } = useParams();
@@ -207,6 +208,11 @@ export default function FullReportTemplate() {
             {forms["16-form-vaccination-back"]?.savedAt && (
               <div className="page-break">
                 <VaccinationBackTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["13-form-pft-front"]?.savedAt && (
+              <div className="page-break">
+                <PftFrontTemplate hideActions={true} patient={patient} />
               </div>
             )}
             {forms["17-form-food-handler-certificate"]?.savedAt && (
