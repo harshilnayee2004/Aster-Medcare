@@ -21,6 +21,11 @@ export default function Dashboard() {
   const [reviewDate, setReviewDate] = useState("");
   const [savingReview, setSavingReview] = useState(false);
 
+  // OTP Delete verification states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [enteredOtp, setEnteredOtp] = useState("");
+
   const hasAccess = (formKey) => {
     if (!currentUser) return false;
     if (currentUser.role === "admin" || currentUser.role === "doctor") return true;
@@ -141,13 +146,22 @@ export default function Dashboard() {
     }
   };
 
+  const openDeleteModal = () => {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(otp);
+    setEnteredOtp("");
+    setIsDeleteModalOpen(true);
+  };
+
   const handleDeletePatient = async () => {
-    if (!window.confirm("Are you sure you want to permanently delete this patient record? This action cannot be undone!")) {
+    if (enteredOtp !== generatedOtp) {
+      alert("Invalid verification OTP. Please try again.");
       return;
     }
     try {
       await api.delete(`/patients/${patientId}`);
       alert("Patient record deleted successfully.");
+      setIsDeleteModalOpen(false);
       navigate("/patients");
     } catch (err) {
       console.error("Failed to delete patient:", err);
@@ -189,7 +203,7 @@ export default function Dashboard() {
 
             {currentUser?.role === "admin" && (
               <button
-                onClick={handleDeletePatient}
+                onClick={openDeleteModal}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition duration-150 border border-red-200/50 outline-none focus:ring-2 focus:ring-red-200"
               >
                 <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -588,6 +602,57 @@ export default function Dashboard() {
           </div>
         </section>
       </div>
+
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
+          <div className="w-full max-w-md rounded-2xl border border-slate-100 bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center gap-3 text-red-600">
+              <svg className="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <h3 className="text-lg font-bold tracking-tight">Two-Step Verification Required</h3>
+            </div>
+            <p className="mt-3 text-sm text-slate-500 leading-relaxed">
+              You are about to permanently delete the patient record for <strong className="text-slate-800">{patient?.name}</strong>. This action is irreversible.
+            </p>
+            
+            <div className="mt-5 rounded-xl bg-slate-50 p-4 text-center border border-slate-100">
+              <span className="text-xxs font-extrabold uppercase tracking-wider text-slate-400 block mb-1">Verification OTP Code</span>
+              <span className="text-3xl font-black text-brand tracking-widest select-all">{generatedOtp}</span>
+            </div>
+
+            <div className="mt-5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Enter the OTP shown above</label>
+              <input
+                type="text"
+                maxLength={6}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-center text-lg font-bold text-slate-800 tracking-widest outline-none focus:border-brand"
+                placeholder="------"
+                value={enteredOtp}
+                onChange={(e) => setEnteredOtp(e.target.value.replace(/\D/g, ""))}
+              />
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-4 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200/85 rounded-xl transition duration-150"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeletePatient}
+                disabled={enteredOtp !== generatedOtp}
+                className="px-5 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-sm transition duration-150"
+              >
+                Permanently Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
