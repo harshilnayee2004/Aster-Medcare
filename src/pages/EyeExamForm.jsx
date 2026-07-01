@@ -6,6 +6,7 @@ import api from "../services/api";
 
 const initialEyeExam = {
   collectedBy: "",
+  collectedDate: "",
   occupation: "",
   allergy: "NO",
   pastHistory: "NO",
@@ -31,8 +32,20 @@ const initialEyeExam = {
   diplopiaLeft: "NO",
   pathologyRight: "NO",
   pathologyLeft: "NO",
+  pathologyCondition: "",
   remarks: "NA",
   conclusion: "Normal Eye Vision Fit For Job",
+  squint: "Absent",
+  squintRemarks: "NA",
+  binocularity: "Normal",
+  binocularityRemarks: "NA",
+  stereoDepth: "Normal",
+  stereoDepthRemarks: "NA",
+  peripheralVision: "Normal",
+  peripheralVisionRemarks: "NA",
+  muscleStrength: "Normal",
+  muscleStrengthRemarks: "NA",
+  doctorSignatureDate: "",
 };
 
 export default function EyeExamForm() {
@@ -181,6 +194,10 @@ export default function EyeExamForm() {
             <Field label="Past Ophthalmic History" value={form.pastHistory} onChange={(value) => updateField("pastHistory", value)} />
             <Field label="Current Complaint" value={form.currentComplaint} onChange={(value) => updateField("currentComplaint", value)} />
             <Field label="Data Collected By" value={form.collectedBy} onChange={(value) => updateField("collectedBy", value)} />
+            <div>
+              <label className="field-label font-bold text-slate-600 mb-2">General Info Date</label>
+              <input type="date" className="input text-xs font-semibold text-slate-700" value={form.collectedDate || ""} onChange={(e) => updateField("collectedDate", e.target.value)} />
+            </div>
           </Section>
 
           <Section title="2. Vision & Ocular Parameters">
@@ -214,16 +231,38 @@ export default function EyeExamForm() {
             ].map(([key, label]) => (
               <Choice key={key} label={label} value={form[key]} onChange={(value) => updateField(key, value)} />
             ))}
+            <div className="col-span-1 md:col-span-2">
+              <Field label="If Pathological Condition Yes, What Condition?" value={form.pathologyCondition} onChange={(value) => updateField("pathologyCondition", value)} />
+            </div>
           </Section>
 
-          {/* Section 4 */}
+          <Section title="4. Specific Titmus (Drivers / Security / Canteen Staff)">
+            <Choice label="Squint" value={form.squint} onChange={(value) => updateField("squint", value)} options={["Present", "Absent"]} />
+            <Field label="Squint Remarks" value={form.squintRemarks} onChange={(value) => updateField("squintRemarks", value)} />
+            <Choice label="Binocularity" value={form.binocularity} onChange={(value) => updateField("binocularity", value)} options={["Normal", "Abnormal"]} />
+            <Field label="Binocularity Remarks" value={form.binocularityRemarks} onChange={(value) => updateField("binocularityRemarks", value)} />
+            <Choice label="Stereo Depth" value={form.stereoDepth} onChange={(value) => updateField("stereoDepth", value)} options={["Normal", "Abnormal"]} />
+            <Field label="Stereo Depth Remarks" value={form.stereoDepthRemarks} onChange={(value) => updateField("stereoDepthRemarks", value)} />
+            <Choice label="Peripheral Vision" value={form.peripheralVision} onChange={(value) => updateField("peripheralVision", value)} options={["Normal", "Abnormal"]} />
+            <Field label="Peripheral Vision Remarks" value={form.peripheralVisionRemarks} onChange={(value) => updateField("peripheralVisionRemarks", value)} />
+            <Choice label="Muscle Strength" value={form.muscleStrength} onChange={(value) => updateField("muscleStrength", value)} options={["Normal", "Abnormal"]} />
+            <Field label="Muscle Strength Remarks" value={form.muscleStrengthRemarks} onChange={(value) => updateField("muscleStrengthRemarks", value)} />
+          </Section>
+
+          {/* Section 5 */}
           <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm space-y-5">
             <div className="pb-3 border-b border-slate-100">
-              <h2 className="text-base font-bold text-slate-800 tracking-tight">4. Medical Conclusion & Summary</h2>
+              <h2 className="text-base font-bold text-slate-800 tracking-tight">5. Medical Conclusion & Summary</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Field label="Conclusion" value={form.conclusion} onChange={(value) => updateField("conclusion", value)} />
               <Field label="Remarks (If Any)" value={form.remarks} onChange={(value) => updateField("remarks", value)} />
+              <div className="col-span-1 md:col-span-2">
+                <div>
+                  <label className="field-label font-bold text-slate-600 mb-2">Doctor Signature Date & Time</label>
+                  <input type="datetime-local" className="input text-xs font-semibold text-slate-700" value={form.doctorSignatureDate || ""} onChange={(e) => updateField("doctorSignatureDate", e.target.value)} />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -254,15 +293,16 @@ function Field({ label, value, onChange, required }) {
   );
 }
 
-function Choice({ label, value, onChange, required }) {
+function Choice({ label, value, onChange, options = ["YES", "NO"], required }) {
   return (
     <div>
       <label className="field-label font-bold text-slate-600 mb-2">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <select className="input !py-2 text-xs font-semibold text-slate-700" value={value} onChange={(event) => onChange(event.target.value)}>
-        <option>YES</option>
-        <option>NO</option>
+        {options.map((opt) => (
+          <option key={opt} value={opt}>{opt}</option>
+        ))}
       </select>
     </div>
   );
