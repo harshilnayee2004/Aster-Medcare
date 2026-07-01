@@ -32,6 +32,8 @@ function baseForm(patient) {
     extensionNote: "",
     symptoms: "",
     doctorSignatureDate: "",
+    bottomExamDate: "",
+    bottomSignatureDate: "",
   };
 }
 
@@ -190,6 +192,8 @@ export default function Form33Form() {
             <DateField label="Date of Examination" type="date" value={form.examinationDate} onChange={(val) => updateField("examinationDate", val)} />
             <Field label="Extension / Unfit Note" field="extensionNote" value={form.extensionNote} onChange={updateField} />
             <Field label="Observed Signs & Symptoms" field="symptoms" value={form.symptoms} onChange={updateField} />
+            <DateField label="Re-examination Date" type="date" value={form.bottomExamDate} onChange={(val) => updateField("bottomExamDate", val)} />
+            <DateField label="Re-examination Signature Date" type="date" value={form.bottomSignatureDate} onChange={(val) => updateField("bottomSignatureDate", val)} />
             <div className="col-span-1 md:col-span-2">
               <DateField label="Doctor Signature Date & Time" type="datetime-local" value={form.doctorSignatureDate} onChange={(val) => updateField("doctorSignatureDate", val)} />
             </div>
