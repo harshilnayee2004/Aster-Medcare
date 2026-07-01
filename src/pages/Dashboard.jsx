@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, Navigate } from "react-router-dom";
+import { Link, useParams, Navigate, useNavigate } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import FormCard from "../components/FormCard.jsx";
 import FileUpload from "../components/FileUpload.jsx";
@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 
 export default function Dashboard() {
   const { patientId } = useParams();
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -140,6 +141,20 @@ export default function Dashboard() {
     }
   };
 
+  const handleDeletePatient = async () => {
+    if (!window.confirm("Are you sure you want to permanently delete this patient record? This action cannot be undone!")) {
+      return;
+    }
+    try {
+      await api.delete(`/patients/${patientId}`);
+      alert("Patient record deleted successfully.");
+      navigate("/patients");
+    } catch (err) {
+      console.error("Failed to delete patient:", err);
+      alert("Failed to delete patient. Please try again.");
+    }
+  };
+
   const fitStatusVal = forms.postMedical?.data?.fitStatus || "";
 
   return (
@@ -171,6 +186,18 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+
+            {currentUser?.role === "admin" && (
+              <button
+                onClick={handleDeletePatient}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition duration-150 border border-red-200/50 outline-none focus:ring-2 focus:ring-red-200"
+              >
+                <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Delete Patient
+              </button>
+            )}
           </div>
 
           {/* Demographics Chips */}
