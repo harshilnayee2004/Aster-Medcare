@@ -3,6 +3,7 @@ import { Navigate, useNavigate, useParams, Link } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import { getPatient, updatePatientForm } from "../utils/localStorage.js";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const initialPreMedical = {
   collectedBy: "",
@@ -59,6 +60,7 @@ export default function PreMedicalForm() {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState("Saved ✓");
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     async function loadData() {
@@ -76,7 +78,8 @@ export default function PreMedicalForm() {
               gender: patientData.gender || "",
               address: patientData.address || "",
               phoneNo: patientData.mobile || "",
-              ...res.data.form.data
+              ...res.data.form.data,
+              collectedBy: res.data.form.data.collectedBy || currentUser?.name || ""
             });
           } else {
             setForm({
@@ -86,6 +89,7 @@ export default function PreMedicalForm() {
               gender: patientData.gender || "",
               address: patientData.address || "",
               phoneNo: patientData.mobile || "",
+              collectedBy: currentUser?.name || ""
             });
           }
         } catch {
@@ -96,6 +100,7 @@ export default function PreMedicalForm() {
             gender: patientData.gender || "",
             address: patientData.address || "",
             phoneNo: patientData.mobile || "",
+            collectedBy: currentUser?.name || ""
           });
         }
       } catch (err) {

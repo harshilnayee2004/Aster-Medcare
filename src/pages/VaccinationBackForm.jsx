@@ -3,6 +3,7 @@ import { Navigate, useNavigate, useParams, Link } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import { getPatient, updatePatientForm } from "../utils/localStorage.js";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const initialVaccinationBackForm = {
   dataCollectedBy: "",
@@ -34,6 +35,7 @@ export default function VaccinationBackForm() {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState("Saved ✓");
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     async function loadData() {
@@ -46,7 +48,8 @@ export default function VaccinationBackForm() {
           if (res.data && res.data.formExists) {
             setForm({
               ...initialVaccinationBackForm,
-              ...res.data.form.data
+              ...res.data.form.data,
+              dataCollectedBy: res.data.form.data.dataCollectedBy || currentUser?.name || ""
             });
           } else {
             // Auto populate from patient info
@@ -56,7 +59,8 @@ export default function VaccinationBackForm() {
               givenOn: new Date().toISOString().split("T")[0],
               certVaccinationDate: new Date().toISOString().split("T")[0],
               certDate: new Date().toISOString().split("T")[0],
-              certTime: new Date().toLocaleTimeString("en-US", { hour12: false }).substring(0, 5)
+              certTime: new Date().toLocaleTimeString("en-US", { hour12: false }).substring(0, 5),
+              dataCollectedBy: currentUser?.name || ""
             });
           }
         } catch {
@@ -66,7 +70,8 @@ export default function VaccinationBackForm() {
             givenOn: new Date().toISOString().split("T")[0],
             certVaccinationDate: new Date().toISOString().split("T")[0],
             certDate: new Date().toISOString().split("T")[0],
-            certTime: new Date().toLocaleTimeString("en-US", { hour12: false }).substring(0, 5)
+            certTime: new Date().toLocaleTimeString("en-US", { hour12: false }).substring(0, 5),
+            dataCollectedBy: currentUser?.name || ""
           });
         }
       } catch (err) {

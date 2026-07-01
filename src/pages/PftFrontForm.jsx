@@ -3,6 +3,7 @@ import { Navigate, useNavigate, useParams, Link } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import { getPatient, updatePatientForm } from "../utils/localStorage.js";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const initialPftFrontForm = {
   dataCollectedBy: "",
@@ -109,6 +110,7 @@ export default function PftFrontForm() {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState("Saved ✓");
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     async function loadData() {
@@ -121,7 +123,8 @@ export default function PftFrontForm() {
           if (res.data && res.data.formExists) {
             setForm({
               ...initialPftFrontForm,
-              ...res.data.form.data
+              ...res.data.form.data,
+              dataCollectedBy: res.data.form.data.dataCollectedBy || currentUser?.name || ""
             });
           } else {
             // Auto populate from patient info
@@ -138,7 +141,8 @@ export default function PftFrontForm() {
               company: patientData.company || "",
               occupationPost: patientData.occupation || "",
               date: new Date().toISOString().split("T")[0],
-              doctorDate: new Date().toISOString().split("T")[0]
+              doctorDate: new Date().toISOString().split("T")[0],
+              dataCollectedBy: currentUser?.name || ""
             });
           }
         } catch {
@@ -155,7 +159,8 @@ export default function PftFrontForm() {
             company: patientData.company || "",
             occupationPost: patientData.occupation || "",
             date: new Date().toISOString().split("T")[0],
-            doctorDate: new Date().toISOString().split("T")[0]
+            doctorDate: new Date().toISOString().split("T")[0],
+            dataCollectedBy: currentUser?.name || ""
           });
         }
       } catch (err) {

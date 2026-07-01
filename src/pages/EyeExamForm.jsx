@@ -3,6 +3,7 @@ import { Navigate, useNavigate, useParams, Link } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import { getPatient, updatePatientForm } from "../utils/localStorage.js";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const initialEyeExam = {
   collectedBy: "",
@@ -55,6 +56,7 @@ export default function EyeExamForm() {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState("Saved ✓");
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     async function loadData() {
@@ -70,7 +72,8 @@ export default function EyeExamForm() {
               name: patientData.name || "",
               age: patientData.age || "",
               gender: patientData.gender || "",
-              ...res.data.form.data
+              ...res.data.form.data,
+              collectedBy: res.data.form.data.collectedBy || currentUser?.name || ""
             });
           } else {
             setForm({
@@ -78,6 +81,7 @@ export default function EyeExamForm() {
               name: patientData.name || "",
               age: patientData.age || "",
               gender: patientData.gender || "",
+              collectedBy: currentUser?.name || ""
             });
           }
         } catch {
@@ -86,6 +90,7 @@ export default function EyeExamForm() {
             name: patientData.name || "",
             age: patientData.age || "",
             gender: patientData.gender || "",
+            collectedBy: currentUser?.name || ""
           });
         }
       } catch (err) {

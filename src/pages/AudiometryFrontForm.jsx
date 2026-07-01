@@ -3,6 +3,7 @@ import { Navigate, useNavigate, useParams, Link } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import { getPatient, updatePatientForm } from "../utils/localStorage.js";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const initialAudiometryFront = {
   collectedBy: "",
@@ -42,6 +43,7 @@ export default function AudiometryFrontForm() {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState("Saved ✓");
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     async function loadData() {
@@ -60,7 +62,8 @@ export default function AudiometryFrontForm() {
               address: patientData.address || "",
               phoneNo: patientData.mobile || "",
               occupation: patientData.occupation || "",
-              ...res.data.form.data
+              ...res.data.form.data,
+              collectedBy: res.data.form.data.collectedBy || currentUser?.name || ""
             });
           } else {
             setForm({
@@ -71,6 +74,7 @@ export default function AudiometryFrontForm() {
               address: patientData.address || "",
               phoneNo: patientData.mobile || "",
               occupation: patientData.occupation || "",
+              collectedBy: currentUser?.name || ""
             });
           }
         } catch {
@@ -82,6 +86,7 @@ export default function AudiometryFrontForm() {
             address: patientData.address || "",
             phoneNo: patientData.mobile || "",
             occupation: patientData.occupation || "",
+            collectedBy: currentUser?.name || ""
           });
         }
       } catch (err) {
