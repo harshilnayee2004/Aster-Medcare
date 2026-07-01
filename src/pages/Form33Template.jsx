@@ -140,7 +140,7 @@ export default function Form33Template({ hideActions = false, patient: propPatie
             timeStr = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
           }
         }
-        const certDateTime = `DATE: ${examDateStr}      ${timeStr}`;
+        const certDateTime = `${examDateStr}      ${timeStr}`;
 
         // Re-examination dates formatted
         const bottomExDate = formatDateToDMY(actualForm.bottomExamDate || "");
