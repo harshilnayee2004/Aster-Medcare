@@ -87,6 +87,7 @@ export default function Dashboard() {
     forms["5-form-height-pass"]?.savedAt && ["Height Pass Test Report completed", forms["5-form-height-pass"].savedAt],
     forms["10-form-ophthal-form-6"]?.savedAt && ["Ophthalmic Form 6 completed", forms["10-form-ophthal-form-6"].savedAt],
     forms["11-form-audiometry-front"]?.savedAt && ["Audiometry Report (Front) completed", forms["11-form-audiometry-front"].savedAt],
+    forms["12-form-audiometry-back"]?.savedAt && ["12 FORM Audiometry Back completed", forms["12-form-audiometry-back"].savedAt],
     forms["18-form-vaccine-ircs-forms-2"]?.savedAt && ["Vaccination Certificate completed", forms["18-form-vaccine-ircs-forms-2"].savedAt],
     forms["25-form-for-medical-fitness-certificate-format"]?.savedAt && ["Medical Fitness Certificate completed", forms["25-form-for-medical-fitness-certificate-format"].savedAt],
     forms["26-form-death-certificate"]?.savedAt && ["Death Certificate completed", forms["26-form-death-certificate"].savedAt],
@@ -109,6 +110,7 @@ export default function Dashboard() {
     forms["5-form-height-pass"]?.savedAt,
     forms["10-form-ophthal-form-6"]?.savedAt,
     forms["11-form-audiometry-front"]?.savedAt,
+    forms["12-form-audiometry-back"]?.savedAt,
     forms["18-form-vaccine-ircs-forms-2"]?.savedAt,
     forms["25-form-for-medical-fitness-certificate-format"]?.savedAt,
     forms["26-form-death-certificate"]?.savedAt,
@@ -356,6 +358,14 @@ export default function Dashboard() {
               savedAt={forms["11-form-audiometry-front"]?.savedAt}
               to={`/patients/${patientId}/audiometry-front`}
               disabled={!hasAccess("11-form-audiometry-front")}
+            />
+            <FormCard
+              title="12 FORM Audiometry Back"
+              icon="AB"
+              status={forms["12-form-audiometry-back"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["12-form-audiometry-back"]?.savedAt}
+              to={`/patients/${patientId}/audiometry-back`}
+              disabled={!hasAccess("12-form-audiometry-back")}
             />
             <FormCard
               title="18 FORM Vaccine ircs forms-2"

@@ -13,6 +13,7 @@ const ALL_24_FORMS = [
   { key: "5-form-height-pass", label: "5 FORM Height Pass" },
   { key: "10-form-ophthal-form-6", label: "10 FORM Ophthal Form 6" },
   { key: "11-form-audiometry-front", label: "11 FORM Audiometry Front" },
+  { key: "12-form-audiometry-back", label: "12 FORM Audiometry Back" },
   { key: "15-form-vaccination-front", label: "15 FORM Vaccination Front" },
   { key: "16-form-vaccination-back", label: "16 FORM Vaccination Back" },
   { key: "13-form-pft-front", label: "13 FORM PFT Front" },
@@ -24,7 +25,6 @@ const ALL_24_FORMS = [
   { key: "36-form-airport-bohw-ht-back", label: "36 FORM Airport BOHW-HT Back" },
   { key: "form09", label: "Medical Form 09 (Placeholder)" },
   { key: "form10", label: "Medical Form 10 (Placeholder)" },
-  { key: "form12", label: "Medical Form 12 (Placeholder)" },
   { key: "form14", label: "Medical Form 14 (Placeholder)" },
   { key: "form23", label: "Medical Form 23 (Placeholder)" }
 ];
@@ -144,8 +144,8 @@ export default function AdminPanel() {
     if (isDoctorOrAdmin) return;
     
     const keysToSelect = category === "built" 
-      ? ALL_24_FORMS.slice(0, 19).map(f => f.key)
-      : ALL_24_FORMS.slice(19).map(f => f.key);
+      ? ALL_24_FORMS.slice(0, 20).map(f => f.key)
+      : ALL_24_FORMS.slice(20).map(f => f.key);
     
     const newAccess = Array.from(new Set([...selectedUserAccess, ...keysToSelect]));
     setSelectedUserAccess(newAccess);
@@ -156,15 +156,15 @@ export default function AdminPanel() {
     if (isDoctorOrAdmin) return;
 
     const keysToRemove = category === "built"
-      ? ALL_24_FORMS.slice(0, 19).map(f => f.key)
-      : ALL_24_FORMS.slice(19).map(f => f.key);
+      ? ALL_24_FORMS.slice(0, 20).map(f => f.key)
+      : ALL_24_FORMS.slice(20).map(f => f.key);
 
     const newAccess = selectedUserAccess.filter(k => !keysToRemove.includes(k));
     setSelectedUserAccess(newAccess);
   };
 
-  const builtForms = ALL_24_FORMS.slice(0, 19);
-  const placeholderForms = ALL_24_FORMS.slice(19);
+  const builtForms = ALL_24_FORMS.slice(0, 20);
+  const placeholderForms = ALL_24_FORMS.slice(20);
 
   return (
     <AppShell>

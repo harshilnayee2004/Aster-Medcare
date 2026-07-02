@@ -11,6 +11,7 @@ import AirportBohwTemplate from "./AirportBohwTemplate.jsx";
 import HeightPassTemplate from "./HeightPassTemplate.jsx";
 import OphthalForm6Template from "./OphthalForm6Template.jsx";
 import AudiometryFrontTemplate from "./AudiometryFrontTemplate.jsx";
+import AudiometryBackTemplate from "./AudiometryBackTemplate.jsx";
 import VaccineCertificateTemplate from "./VaccineCertificateTemplate.jsx";
 import FitnessCertificateTemplate from "./FitnessCertificateTemplate.jsx";
 import DeathCertificateTemplate from "./DeathCertificateTemplate.jsx";
@@ -72,6 +73,7 @@ export default function FullReportTemplate() {
     forms["5-form-height-pass"]?.savedAt,
     forms["10-form-ophthal-form-6"]?.savedAt,
     forms["11-form-audiometry-front"]?.savedAt,
+    forms["12-form-audiometry-back"]?.savedAt,
     forms["15-form-vaccination-front"]?.savedAt,
     forms["17-form-food-handler-certificate"]?.savedAt,
     forms["18-form-vaccine-ircs-forms-2"]?.savedAt,
@@ -198,6 +200,11 @@ export default function FullReportTemplate() {
             {forms["11-form-audiometry-front"]?.savedAt && (
               <div className="page-break">
                 <AudiometryFrontTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["12-form-audiometry-back"]?.savedAt && (
+              <div className="page-break">
+                <AudiometryBackTemplate hideActions={true} patient={patient} />
               </div>
             )}
             {forms["15-form-vaccination-front"]?.savedAt && (

@@ -37,6 +37,8 @@ import OphthalForm6Form from "./pages/OphthalForm6Form.jsx";
 import OphthalForm6Template from "./pages/OphthalForm6Template.jsx";
 import AudiometryFrontForm from "./pages/AudiometryFrontForm.jsx";
 import AudiometryFrontTemplate from "./pages/AudiometryFrontTemplate.jsx";
+import AudiometryBackForm from "./pages/AudiometryBackForm.jsx";
+import AudiometryBackTemplate from "./pages/AudiometryBackTemplate.jsx";
 import VaccineCertificateForm from "./pages/VaccineCertificateForm.jsx";
 import VaccineCertificateTemplate from "./pages/VaccineCertificateTemplate.jsx";
 import FitnessCertificateForm from "./pages/FitnessCertificateForm.jsx";
@@ -346,6 +348,18 @@ export default function App() {
       <Route path="/patients/:patientId/audiometry-front/preview" element={
         <FormProtectedRoute formKey="11-form-audiometry-front">
           <AudiometryFrontTemplate />
+        </FormProtectedRoute>
+      } />
+
+      <Route path="/patients/:patientId/audiometry-back" element={
+        <FormProtectedRoute formKey="12-form-audiometry-back">
+          <AudiometryBackForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/audiometry-back/preview" element={
+        <FormProtectedRoute formKey="12-form-audiometry-back">
+          <AudiometryBackTemplate />
         </FormProtectedRoute>
       } />
       

@@ -17,6 +17,7 @@ import AirportBohwTemplate from "./AirportBohwTemplate.jsx";
 import HeightPassTemplate from "./HeightPassTemplate.jsx";
 import OphthalForm6Template from "./OphthalForm6Template.jsx";
 import AudiometryFrontTemplate from "./AudiometryFrontTemplate.jsx";
+import AudiometryBackTemplate from "./AudiometryBackTemplate.jsx";
 import VaccineCertificateTemplate from "./VaccineCertificateTemplate.jsx";
 import FitnessCertificateTemplate from "./FitnessCertificateTemplate.jsx";
 import DeathCertificateTemplate from "./DeathCertificateTemplate.jsx";
@@ -38,6 +39,7 @@ const ALL_24_FORMS = [
   { key: "5-form-height-pass", label: "5 FORM Height Pass" },
   { key: "10-form-ophthal-form-6", label: "10 FORM Ophthal Form 6" },
   { key: "11-form-audiometry-front", label: "11 FORM Audiometry Front" },
+  { key: "12-form-audiometry-back", label: "12 FORM Audiometry Back" },
   { key: "17-form-food-handler-certificate", label: "17 FORM Food Handler Certificate" },
   { key: "15-form-vaccination-front", label: "15 FORM Vaccination Front" },
   { key: "16-form-vaccination-back", label: "16 FORM Vaccination Back" },
@@ -49,7 +51,6 @@ const ALL_24_FORMS = [
   { key: "36-form-airport-bohw-ht-back", label: "36 FORM Airport BOHW-HT Back" },
   { key: "form09", label: "Medical Form 09 (Placeholder)" },
   { key: "form10", label: "Medical Form 10 (Placeholder)" },
-  { key: "form12", label: "Medical Form 12 (Placeholder)" },
   { key: "form14", label: "Medical Form 14 (Placeholder)" },
   { key: "form23", label: "Medical Form 23 (Placeholder)" }
 ];
@@ -186,6 +187,7 @@ export default function PatientSelection() {
           forms["5-form-height-pass"]?.savedAt,
           forms["10-form-ophthal-form-6"]?.savedAt,
           forms["11-form-audiometry-front"]?.savedAt,
+          forms["12-form-audiometry-back"]?.savedAt,
           forms["18-form-vaccine-ircs-forms-2"]?.savedAt,
           forms["25-form-for-medical-fitness-certificate-format"]?.savedAt,
           forms["26-form-death-certificate"]?.savedAt,
@@ -699,6 +701,11 @@ export default function PatientSelection() {
           {pdfPatient.forms?.["11-form-audiometry-front"]?.savedAt && (
             <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
               <AudiometryFrontTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["12-form-audiometry-back"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <AudiometryBackTemplate hideActions={true} patient={pdfPatient} />
             </div>
           )}
           {pdfPatient.forms?.["15-form-vaccination-front"]?.savedAt && (
