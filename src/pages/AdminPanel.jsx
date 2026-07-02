@@ -20,6 +20,7 @@ const ALL_24_FORMS = [
   { key: "14-form-pft-back", label: "14 FORM PFT Back" },
   { key: "17-form-food-handler-certificate", label: "17 FORM Food Handler Certificate" },
   { key: "18-form-vaccine-ircs-forms-2", label: "18 FORM Vaccine ircs forms-2" },
+  { key: "19-form-ecg", label: "19 FORM ECG" },
   { key: "25-form-for-medical-fitness-certificate-format", label: "25 FORM for Medical Fitness Certificate Format" },
   { key: "26-form-death-certificate", label: "26 FORM Death certificate" },
   { key: "35-form-airport-bohw-ht-front", label: "35 FORM Airport BOHW-HT Front" },
@@ -144,8 +145,8 @@ export default function AdminPanel() {
     if (isDoctorOrAdmin) return;
     
     const keysToSelect = category === "built" 
-      ? ALL_24_FORMS.slice(0, 21).map(f => f.key)
-      : ALL_24_FORMS.slice(21).map(f => f.key);
+      ? ALL_24_FORMS.slice(0, 22).map(f => f.key)
+      : ALL_24_FORMS.slice(22).map(f => f.key);
     
     const newAccess = Array.from(new Set([...selectedUserAccess, ...keysToSelect]));
     setSelectedUserAccess(newAccess);
@@ -156,15 +157,15 @@ export default function AdminPanel() {
     if (isDoctorOrAdmin) return;
 
     const keysToRemove = category === "built"
-      ? ALL_24_FORMS.slice(0, 21).map(f => f.key)
-      : ALL_24_FORMS.slice(21).map(f => f.key);
+      ? ALL_24_FORMS.slice(0, 22).map(f => f.key)
+      : ALL_24_FORMS.slice(22).map(f => f.key);
 
     const newAccess = selectedUserAccess.filter(k => !keysToRemove.includes(k));
     setSelectedUserAccess(newAccess);
   };
 
-  const builtForms = ALL_24_FORMS.slice(0, 21);
-  const placeholderForms = ALL_24_FORMS.slice(21);
+  const builtForms = ALL_24_FORMS.slice(0, 22);
+  const placeholderForms = ALL_24_FORMS.slice(22);
 
   return (
     <AppShell>

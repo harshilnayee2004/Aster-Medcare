@@ -33,6 +33,8 @@ import PftFrontForm from "./pages/PftFrontForm.jsx";
 import PftFrontTemplate from "./pages/PftFrontTemplate.jsx";
 import PftBackForm from "./pages/PftBackForm.jsx";
 import PftBackTemplate from "./pages/PftBackTemplate.jsx";
+import EcgForm from "./pages/EcgForm.jsx";
+import EcgTemplate from "./pages/EcgTemplate.jsx";
 import HeightPassForm from "./pages/HeightPassForm.jsx";
 import HeightPassTemplate from "./pages/HeightPassTemplate.jsx";
 import OphthalForm6Form from "./pages/OphthalForm6Form.jsx";
@@ -338,6 +340,18 @@ export default function App() {
       <Route path="/patients/:patientId/pft-back/preview" element={
         <FormProtectedRoute formKey="14-form-pft-back">
           <PftBackTemplate />
+        </FormProtectedRoute>
+      } />
+
+      <Route path="/patients/:patientId/ecg" element={
+        <FormProtectedRoute formKey="19-form-ecg">
+          <EcgForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/ecg/preview" element={
+        <FormProtectedRoute formKey="19-form-ecg">
+          <EcgTemplate />
         </FormProtectedRoute>
       } />
       

@@ -22,6 +22,7 @@ import VaccinationFrontTemplate from "./VaccinationFrontTemplate.jsx";
 import VaccinationBackTemplate from "./VaccinationBackTemplate.jsx";
 import PftFrontTemplate from "./PftFrontTemplate.jsx";
 import PftBackTemplate from "./PftBackTemplate.jsx";
+import EcgTemplate from "./EcgTemplate.jsx";
 
 export default function FullReportTemplate() {
   const { patientId } = useParams();
@@ -83,6 +84,7 @@ export default function FullReportTemplate() {
     forms["35-form-airport-bohw-ht-front"]?.savedAt,
     forms["36-form-airport-bohw-ht-back"]?.savedAt,
     forms["14-form-pft-back"]?.savedAt,
+    forms["19-form-ecg"]?.savedAt,
   ].filter(Boolean).length;
 
   function copyShareLink() {
@@ -227,6 +229,11 @@ export default function FullReportTemplate() {
             {forms["14-form-pft-back"]?.savedAt && (
               <div className="page-break">
                 <PftBackTemplate hideActions={true} patient={patient} />
+              </div>
+            )}
+            {forms["19-form-ecg"]?.savedAt && (
+              <div className="page-break">
+                <EcgTemplate hideActions={true} patient={patient} />
               </div>
             )}
             {forms["17-form-food-handler-certificate"]?.savedAt && (
