@@ -106,8 +106,8 @@ export default function AudiometryBackTemplate({ hideActions = false, patient: p
 
         // Stamping mapping
         const values = {
-          height: actualForm.height ? `${actualForm.height} Cm` : "",
-          weight: actualForm.weight ? `${actualForm.weight} Kg` : "",
+          height: actualForm.height || "",
+          weight: actualForm.weight || "",
           vision: actualForm.vision || "Normal",
           reliability: actualForm.reliability || "",
           responseConsistency: actualForm.responseConsistency || "",
