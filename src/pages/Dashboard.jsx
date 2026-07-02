@@ -97,6 +97,7 @@ export default function Dashboard() {
     forms["15-form-vaccination-front"]?.savedAt && ["Vaccination Front completed", forms["15-form-vaccination-front"].savedAt],
     forms["16-form-vaccination-back"]?.savedAt && ["Vaccination Back completed", forms["16-form-vaccination-back"].savedAt],
     forms["13-form-pft-front"]?.savedAt && ["PFT Front completed", forms["13-form-pft-front"].savedAt],
+    forms["14-form-pft-back"]?.savedAt && ["14 FORM PFT Back completed", forms["14-form-pft-back"].savedAt],
     ["Patient registered", patient.createdAt],
   ].filter((item) => item && item[1]);
 
@@ -119,7 +120,8 @@ export default function Dashboard() {
     forms["17-form-food-handler-certificate"]?.savedAt,
     forms["15-form-vaccination-front"]?.savedAt,
     forms["16-form-vaccination-back"]?.savedAt,
-    forms["13-form-pft-front"]?.savedAt
+    forms["13-form-pft-front"]?.savedAt,
+    forms["14-form-pft-back"]?.savedAt
   ].filter(Boolean).length;
 
   const handleSaveReview = async (e) => {
@@ -438,6 +440,14 @@ export default function Dashboard() {
               savedAt={forms["13-form-pft-front"]?.savedAt}
               to={`/patients/${patientId}/pft-front`}
               disabled={!hasAccess("13-form-pft-front")}
+            />
+            <FormCard
+              title="14 FORM PFT Back"
+              icon="PB"
+              status={forms["14-form-pft-back"]?.savedAt ? "Completed" : "Pending"}
+              savedAt={forms["14-form-pft-back"]?.savedAt}
+              to={`/patients/${patientId}/pft-back`}
+              disabled={!hasAccess("14-form-pft-back")}
             />
           </div>
         </section>

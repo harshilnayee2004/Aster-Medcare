@@ -31,6 +31,8 @@ import VaccinationBackForm from "./pages/VaccinationBackForm.jsx";
 import VaccinationBackTemplate from "./pages/VaccinationBackTemplate.jsx";
 import PftFrontForm from "./pages/PftFrontForm.jsx";
 import PftFrontTemplate from "./pages/PftFrontTemplate.jsx";
+import PftBackForm from "./pages/PftBackForm.jsx";
+import PftBackTemplate from "./pages/PftBackTemplate.jsx";
 import HeightPassForm from "./pages/HeightPassForm.jsx";
 import HeightPassTemplate from "./pages/HeightPassTemplate.jsx";
 import OphthalForm6Form from "./pages/OphthalForm6Form.jsx";
@@ -324,6 +326,18 @@ export default function App() {
       <Route path="/patients/:patientId/pft-front/preview" element={
         <FormProtectedRoute formKey="13-form-pft-front">
           <PftFrontTemplate />
+        </FormProtectedRoute>
+      } />
+
+      <Route path="/patients/:patientId/pft-back" element={
+        <FormProtectedRoute formKey="14-form-pft-back">
+          <PftBackForm />
+        </FormProtectedRoute>
+      } />
+      
+      <Route path="/patients/:patientId/pft-back/preview" element={
+        <FormProtectedRoute formKey="14-form-pft-back">
+          <PftBackTemplate />
         </FormProtectedRoute>
       } />
       

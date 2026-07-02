@@ -27,6 +27,7 @@ import FoodHandlerTemplate from "./FoodHandlerTemplate.jsx";
 import VaccinationFrontTemplate from "./VaccinationFrontTemplate.jsx";
 import VaccinationBackTemplate from "./VaccinationBackTemplate.jsx";
 import PftFrontTemplate from "./PftFrontTemplate.jsx";
+import PftBackTemplate from "./PftBackTemplate.jsx";
 
 const ALL_24_FORMS = [
   { key: "preMedical", label: "1 FORM Personal Details" },
@@ -44,6 +45,7 @@ const ALL_24_FORMS = [
   { key: "15-form-vaccination-front", label: "15 FORM Vaccination Front" },
   { key: "16-form-vaccination-back", label: "16 FORM Vaccination Back" },
   { key: "13-form-pft-front", label: "13 FORM PFT Front" },
+  { key: "14-form-pft-back", label: "14 FORM PFT Back" },
   { key: "18-form-vaccine-ircs-forms-2", label: "18 FORM Vaccine ircs forms-2" },
   { key: "25-form-for-medical-fitness-certificate-format", label: "25 FORM for Medical Fitness Certificate Format" },
   { key: "26-form-death-certificate", label: "26 FORM Death certificate" },
@@ -51,7 +53,6 @@ const ALL_24_FORMS = [
   { key: "36-form-airport-bohw-ht-back", label: "36 FORM Airport BOHW-HT Back" },
   { key: "form09", label: "Medical Form 09 (Placeholder)" },
   { key: "form10", label: "Medical Form 10 (Placeholder)" },
-  { key: "form14", label: "Medical Form 14 (Placeholder)" },
   { key: "form23", label: "Medical Form 23 (Placeholder)" }
 ];
 
@@ -196,7 +197,8 @@ export default function PatientSelection() {
           forms["17-form-food-handler-certificate"]?.savedAt,
           forms["15-form-vaccination-front"]?.savedAt,
           forms["16-form-vaccination-back"]?.savedAt,
-          forms["13-form-pft-front"]?.savedAt
+          forms["13-form-pft-front"]?.savedAt,
+          forms["14-form-pft-back"]?.savedAt,
         ].filter(Boolean).length;
 
         if (completedFormsCount === 0) {
@@ -721,6 +723,11 @@ export default function PatientSelection() {
           {pdfPatient.forms?.["13-form-pft-front"]?.savedAt && (
             <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
               <PftFrontTemplate hideActions={true} patient={pdfPatient} />
+            </div>
+          )}
+          {pdfPatient.forms?.["14-form-pft-back"]?.savedAt && (
+            <div className="pdf-page bg-white p-8 mb-8" style={{ width: "800px", minHeight: "1120px" }}>
+              <PftBackTemplate hideActions={true} patient={pdfPatient} />
             </div>
           )}
           {pdfPatient.forms?.["17-form-food-handler-certificate"]?.savedAt && (
