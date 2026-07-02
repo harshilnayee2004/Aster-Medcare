@@ -52,7 +52,6 @@ import DeathCertificateTemplate from "./pages/DeathCertificateTemplate.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import Analytics from "./pages/Analytics.jsx";
 import BulkImport from "./pages/BulkImport.jsx";
-import PdfFiller from "./pages/PdfFiller.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
 // Route protection wrapper for authenticated users
@@ -433,11 +432,7 @@ export default function App() {
         </ProtectedRoute>
       } />
 
-      <Route path="/pdf-filler" element={
-        <ProtectedRoute>
-          <PdfFiller />
-        </ProtectedRoute>
-      } />
+
 
       {/* Role Protected Admin & Analytics Routes */}
       <Route path="/admin" element={
