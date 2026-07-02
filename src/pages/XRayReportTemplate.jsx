@@ -1,11 +1,70 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { formatDate, getPatient } from "../utils/localStorage.js";
+import { getPatient } from "../utils/localStorage.js";
+import api from "../services/api";
+
+function PdfPage({ pdfUrl, pageNum }) {
+  const canvasRef = useRef(null);
+  const [rendering, setRendering] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    async function renderPage() {
+      try {
+        const pdfjsLib = window.pdfjsLib;
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        const pdf = await loadingTask.promise;
+        const page = await pdf.getPage(pageNum);
+        
+        if (!active) return;
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const context = canvas.getContext("2d");
+        
+        const viewport = page.getViewport({ scale: 2.5 });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+        await page.render(renderContext).promise;
+        setRendering(false);
+      } catch (err) {
+        console.error(`Failed to render page ${pageNum}:`, err);
+      }
+    }
+    
+    if (window.pdfjsLib) {
+      renderPage();
+    }
+    
+    return () => {
+      active = false;
+    };
+  }, [pdfUrl, pageNum]);
+
+  return (
+    <div className="relative border border-line rounded-lg overflow-hidden bg-white shadow-sm mb-4 last:mb-0 print:border-none print:rounded-none print:shadow-none print:m-0">
+      {rendering && (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-50 text-slate-400 text-xs font-semibold animate-pulse print:hidden">
+          Rendering page {pageNum}...
+        </div>
+      )}
+      <canvas ref={canvasRef} className="w-full h-auto block" />
+    </div>
+  );
+}
 
 export default function XRayReportTemplate({ hideActions = false, patient: propPatient }) {
   const { patientId } = useParams();
   const [patient, setPatient] = useState(propPatient || null);
   const [loading, setLoading] = useState(!propPatient);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [loadingPdf, setLoadingPdf] = useState(true);
+  const [downloadFilename, setDownloadFilename] = useState("");
+  const [pages, setPages] = useState([]);
 
   useEffect(() => {
     if (propPatient) {
@@ -27,76 +86,148 @@ export default function XRayReportTemplate({ hideActions = false, patient: propP
     loadData();
   }, [patientId, propPatient]);
 
+  useEffect(() => {
+    if (!patient) return;
+
+    async function fetchPdf() {
+      try {
+        setLoadingPdf(true);
+        const forms = patient.forms || {};
+        const actualForm = forms.xrayReport?.data || {};
+
+        // Stamping mapping
+        const values = {
+          photo: actualForm.photo || "",
+        };
+
+        const response = await api.post(`/forms/fill/xrayReport`, { values }, {
+          responseType: "blob"
+        });
+
+        const outputFilename = `filled_XRay_${patient.patientId}.pdf`;
+
+        const blob = new Blob([response.data], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+        setPdfUrl(url);
+        setDownloadFilename(outputFilename);
+      } catch (err) {
+        console.error("Failed to generate X-Ray PDF:", err);
+      } finally {
+        setLoadingPdf(false);
+      }
+    }
+
+    fetchPdf();
+
+    return () => {
+      if (pdfUrl) {
+        window.URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [patient]);
+
+  // Load PDFJS pages dynamically
+  useEffect(() => {
+    if (!pdfUrl) return;
+
+    const scriptId = "pdfjs-cdn-script";
+    let script = document.getElementById(scriptId);
+
+    const loadPdfDoc = async () => {
+      try {
+        const pdfjsLib = window.pdfjsLib;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        const pdf = await loadingTask.promise;
+        
+        const pagesArray = [];
+        for (let i = 1; i <= pdf.numPages; i++) {
+          pagesArray.push(i);
+        }
+        setPages(pagesArray);
+      } catch (err) {
+        console.error("PDFJS document loading failed:", err);
+      }
+    };
+
+    if (!window.pdfjsLib) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+      script.async = true;
+      script.onload = () => {
+        loadPdfDoc();
+      };
+      document.body.appendChild(script);
+    } else {
+      loadPdfDoc();
+    }
+  }, [pdfUrl]);
+
   if (loading) {
-    return <div className="text-center py-20 text-slate-500 font-semibold">Loading X-Ray Report...</div>;
+    return <div className="text-center py-10 text-slate-500 font-medium">Loading patient info...</div>;
   }
 
-  if (!patient) return <Navigate to="/patients" replace />;
-
-  const forms = patient.forms || {};
-  const form = forms.xrayReport?.data || {};
-  const savedAt = forms.xrayReport?.savedAt;
-  const date = savedAt ? formatDate(savedAt) : formatDate();
+  if (!patient) {
+    return <Navigate to="/patients" replace />;
+  }
 
   return (
-    <main className={hideActions ? "" : "template-screen"}>
+    <div className="flex flex-col min-h-screen bg-slate-50/50 print:bg-white">
+      {/* Action Header */}
       {!hideActions && (
-        <div className="template-actions">
-          <Link to={`/patients/${patientId}/xray-report`} className="button-secondary">Back to Form</Link>
-          <button onClick={() => window.print()} className="button-primary">Print</button>
+        <div className="bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm print:hidden">
+          <div className="flex items-center gap-3">
+            <Link 
+              to={`/patients/${patientId}/xray-report`}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
+            >
+              ←
+            </Link>
+            <div>
+              <h1 className="text-sm font-bold text-slate-800">X-Ray Report - 1 - Preview</h1>
+              <p className="text-xxs font-medium text-slate-400 mt-0.5">
+                Patient: <span className="text-slate-600 font-bold">{patient.name}</span> ({patient.patientId})
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => window.print()}
+              disabled={loadingPdf}
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 hover:bg-slate-50 transition disabled:opacity-50"
+            >
+              Print Report
+            </button>
+            {pdfUrl && (
+              <a 
+                href={pdfUrl}
+                download={downloadFilename}
+                className="inline-flex h-9 items-center justify-center rounded-lg bg-brand px-4 text-xs font-bold text-white hover:bg-blue-700 transition"
+              >
+                Download PDF
+              </a>
+            )}
+          </div>
         </div>
       )}
 
-      <div className="xray-page">
-        <div className="xray-title">X-Ray Report - 1</div>
-
-        <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px", fontSize: "12px" }}>
-          <tbody>
-            <tr>
-              <td style={{ border: "1px solid #000", padding: "8px", fontWeight: "bold", width: "25%" }}>Patient ID</td>
-              <td style={{ border: "1px solid #000", padding: "8px", width: "25%" }}>{patient.patientId}</td>
-              <td style={{ border: "1px solid #000", padding: "8px", fontWeight: "bold", width: "25%" }}>Date</td>
-              <td style={{ border: "1px solid #000", padding: "8px", width: "25%" }}>{date}</td>
-            </tr>
-            <tr>
-              <td style={{ border: "1px solid #000", padding: "8px", fontWeight: "bold" }}>Name</td>
-              <td style={{ border: "1px solid #000", padding: "8px" }} colSpan="3">{patient.name}</td>
-            </tr>
-            <tr>
-              <td style={{ border: "1px solid #000", padding: "8px", fontWeight: "bold" }}>Age / Gender</td>
-              <td style={{ border: "1px solid #000", padding: "8px" }}>{patient.age} Yrs / {patient.gender}</td>
-              <td style={{ border: "1px solid #000", padding: "8px", fontWeight: "bold" }}>Company</td>
-              <td style={{ border: "1px solid #000", padding: "8px" }}>{patient.company || "Aster Medcare"}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div style={{ marginTop: "30px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <div style={{ fontSize: "13px", fontWeight: "bold", marginBottom: "15px", width: "100%", borderBottom: "1px solid #000", paddingBottom: "6px" }}>
-            CHEST X-RAY IMAGE:
+      {/* Render Area */}
+      <div className="flex-1 overflow-y-auto p-6 max-w-4xl mx-auto w-full print:p-0 print:max-w-none">
+        {loadingPdf ? (
+          <div className="flex flex-col items-center justify-center py-32 text-slate-400 space-y-3 print:hidden">
+            <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-semibold">Stamping and loading PDF template...</span>
           </div>
-          {form.photo ? (
-            <div style={{ display: "flex", justifyContent: "center", width: "100%", background: "#000", padding: "10px", borderRadius: "4px", border: "1px solid #000" }}>
-              <img src={form.photo} alt="Patient Chest X-Ray" style={{ maxWidth: "100%", maxHeight: "600px", objectFit: "contain" }} />
-            </div>
-          ) : (
-            <div style={{ padding: "40px", fontStyle: "italic", color: "#666", textAlign: "center", border: "1px dashed #ccc", width: "100%", borderRadius: "4px" }}>
-              No X-Ray image uploaded yet.
-            </div>
-          )}
-        </div>
-
-        <div style={{ marginTop: "80px", display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
-          <div>
-            <div style={{ borderBottom: "1px solid #000", width: "150px", height: "30px" }}></div>
-            <p style={{ marginTop: "4px" }}>Technician Signature</p>
+        ) : (
+          <div className="print:m-0 print:p-0">
+            {pages.map((pageNum) => (
+              <PdfPage key={pageNum} pdfUrl={pdfUrl} pageNum={pageNum} />
+            ))}
           </div>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ borderBottom: "1px solid #000", width: "150px", height: "30px", marginLeft: "auto" }}></div>
-            <p style={{ marginTop: "4px" }}>Radiologist Signature & Stamp</p>
-          </div>
-        </div>
+        )}
       </div>
-    </main>
+    </div>
   );
 }
